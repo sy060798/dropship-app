@@ -5,55 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Manajemen Dropship</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts Inter untuk tampilan modern -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-layout">
-        <!-- HEADER / NAVBAR SAMPING/ATAS -->
-        <header class="app-header">
-            <div class="header-brand">
+        <!-- SIDEBAR / MENU DI KIRI -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
                 <h2>🚀 DropshipPro</h2>
-                <span>Manajemen Toko & Keuangan</span>
+                <span>Panel Toko & Keuangan</span>
             </div>
-            <nav class="app-nav">
-                <button onclick="switchTab('dasbor')" class="active" id="nav-dasbor">
-                    📊 Dasbor
-                </button>
-                <button onclick="switchTab('barang')" id="nav-barang">
-                    📦 Data Barang
-                </button>
-                <button onclick="switchTab('penjualan')" id="nav-penjualan">
-                    💰 Data Penjualan
-                </button>
+            <nav class="sidebar-nav">
+                <button onclick="switchTab('dasbor')" class="active" id="nav-dasbor">📊 Dasbor</button>
+                <button onclick="switchTab('modal')" id="nav-modal">💵 Modal Toko</button>
+                <button onclick="switchTab('barang')" id="nav-barang">📦 Data Barang</button>
+                <button onclick="switchTab('penjualan')" id="nav-penjualan">💰 Data Penjualan</button>
             </nav>
-        </header>
+        </aside>
 
-        <!-- KONTEN UTAMA -->
-        <main class="main-container">
+        <!-- KONTEN UTAMA DI KANAN -->
+        <main class="main-content">
             <!-- TAB DASBOR -->
             <div id="tab-dasbor" class="tab-content">
                 <div class="content-header">
                     <h3>Ringkasan Kinerja Toko</h3>
-                    <p class="subtitle">Pantau pendapatan, pengeluaran, dan keuntungan bersih secara real-time.</p>
+                    <p class="subtitle">Pantau modal, pendapatan, dan keuntungan bersih secara real-time.</p>
                 </div>
                 
                 <div class="card-container">
-                    <div class="card card-pendapatan">
+                    <div class="card">
+                        <div class="card-icon">💵</div>
+                        <div class="card-info">
+                            <h4>Total Modal Masuk</h4>
+                            <p id="tot-modal">Rp 0</p>
+                        </div>
+                    </div>
+                    <div class="card">
                         <div class="card-icon">📈</div>
                         <div class="card-info">
                             <h4>Total Pendapatan</h4>
                             <p id="tot-pendapatan">Rp 0</p>
                         </div>
                     </div>
-                    <div class="card card-pengeluaran">
-                        <div class="card-icon">📉</div>
-                        <div class="card-info">
-                            <h4>Total Pengeluaran (HPP + Lainnya)</h4>
-                            <p id="tot-pengeluaran">Rp 0</p>
-                        </div>
-                    </div>
-                    <div class="card card-keuntungan">
+                    <div class="card">
                         <div class="card-icon">✨</div>
                         <div class="card-info">
                             <h4>Keuntungan Bersih</h4>
@@ -63,12 +57,38 @@
                 </div>
             </div>
 
+            <!-- TAB MODAL TOKO -->
+            <div id="tab-modal" class="tab-content" style="display:none;">
+                <div class="content-header-flex">
+                    <div>
+                        <h3>Manajemen Modal Toko</h3>
+                        <p class="subtitle">Catat dan masukkan nominal modal usaha Anda.</p>
+                    </div>
+                    <button class="btn-success" onclick="openModalTokoModal()">+ Tambah Modal</button>
+                </div>
+
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Keterangan</th>
+                                <th>Jumlah Modal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-modal">
+                            <!-- Data modal dimuat dinamis -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- TAB DATA BARANG -->
             <div id="tab-barang" class="tab-content" style="display:none;">
                 <div class="content-header-flex">
                     <div>
                         <h3>Manajemen Data Barang</h3>
-                        <p class="subtitle">Kelola inventaris produk, harga beli, dan harga jual.</p>
+                        <p class="subtitle">Kelola inventaris, SKU otomatis, dan margin keuntungan (5% - 300%).</p>
                     </div>
                     <button class="btn-success" onclick="openModal()">+ Tambah Produk</button>
                 </div>
@@ -77,8 +97,10 @@
                     <table>
                         <thead>
                             <tr>
+                                <th>SKU</th>
                                 <th>Nama Barang</th>
                                 <th>Harga Beli</th>
+                                <th>Margin</th>
                                 <th>Harga Jual</th>
                                 <th>Stok</th>
                                 <th style="text-align: center;">Aksi</th>
@@ -122,34 +144,80 @@
         </main>
     </div>
 
-    <!-- MODAL PRODUK (TAMBAH / EDIT) -->
+    <!-- MODAL PRODUK (TAMBAH / EDIT DENGAN AUTO SKU & MARGIN) -->
     <div id="productModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 480px;">
             <div class="modal-header">
-                <h3 id="modal-title">Tambah Produk</h3>
+                <h3 id="modal-title">Tambah Produk Baru</h3>
                 <button class="btn-close" onclick="closeModal()">&times;</button>
             </div>
             <form id="productForm">
                 <input type="hidden" id="prod-id">
                 <div class="form-group">
+                    <label>SKU Produk (Auto-Generate)</label>
+                    <input type="text" id="sku" readonly style="background-color: #f1f5f9; font-weight: bold;" placeholder="Otomatis terisi...">
+                </div>
+                <div class="form-group">
                     <label>Nama Barang</label>
-                    <input type="text" id="nama_barang" placeholder="Contoh: Kemeja Flanel" required>
+                    <input type="text" id="nama_barang" placeholder="Contoh: Sepatu Sneakers" required oninput="generateSKU(this.value)">
                 </div>
                 <div class="form-group">
-                    <label>Harga Beli (Modal)</label>
-                    <input type="number" id="harga_beli" placeholder="Contoh: 50000" required>
+                    <label>Harga Beli (Modal Satuan)</label>
+                    <input type="number" id="harga_beli" placeholder="Contoh: 100000" required oninput="hitungHargaJual()">
                 </div>
                 <div class="form-group">
-                    <label>Harga Jual</label>
-                    <input type="number" id="harga_jual" placeholder="Contoh: 85000" required>
+                    <label>Pilih Margin Keuntungan (%)</label>
+                    <select id="margin_persen" required onchange="hitungHargaJual()">
+                        <option value="">-- Pilih Margin --</option>
+                        <option value="5">5%</option>
+                        <option value="10">10%</option>
+                        <option value="15">15%</option>
+                        <option value="20">20%</option>
+                        <option value="25">25%</option>
+                        <option value="30">30%</option>
+                        <option value="50">50%</option>
+                        <option value="75">75%</option>
+                        <option value="100">100% (2x Lipat)</option>
+                        <option value="150">150%</option>
+                        <option value="200">200% (3x Lipat)</option>
+                        <option value="300">300% (4x Lipat)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Harga Jual (Otomatis dari Harga Beli + Margin)</label>
+                    <input type="number" id="harga_jual" readonly style="background-color: #f1f5f9; font-weight: bold; color: #10b981;" placeholder="Otomatis terhitung...">
                 </div>
                 <div class="form-group">
                     <label>Stok Awal</label>
-                    <input type="number" id="stok" placeholder="Contoh: 20" required>
+                    <input type="number" id="stok" placeholder="Contoh: 25" required>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
                     <button type="submit" class="btn-primary">Simpan Produk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH MODAL TOKO -->
+    <div id="modalTokoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah Modal Toko</h3>
+                <button class="btn-close" onclick="closeModalToko()">&times;</button>
+            </div>
+            <form id="modalTokoForm" onsubmit="simpanModalToko(event)">
+                <div class="form-group">
+                    <label>Jumlah Modal (Rp)</label>
+                    <input type="number" id="jumlah_modal_input" placeholder="Contoh: 5000000" required>
+                </div>
+                <div class="form-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="keterangan_modal" placeholder="Contoh: Modal awal bulan / Tambahan saldo">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModalToko()">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan Modal</button>
                 </div>
             </form>
         </div>
@@ -173,10 +241,10 @@
                 </div>
                 <div class="form-group">
                     <label>Harga Satuan Jual</label>
-                    <input type="number" id="satuan_jual" placeholder="Otomatis terisi dari harga jual" required>
+                    <input type="number" id="satuan_jual" placeholder="Otomatis terisi..." required>
                 </div>
                 <div class="form-group">
-                    <label>Pengeluaran Lain (Opsional / Ongkir)</label>
+                    <label>Pengeluaran Lain (Ongkir/Biaya Lain)</label>
                     <input type="number" id="pengeluaran_lain" value="0">
                 </div>
                 <div class="modal-actions">
@@ -190,13 +258,37 @@
     <script>
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.app-nav button').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav button').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).style.display = 'block';
             document.getElementById('nav-' + tab).classList.add('active');
             
             if(tab === 'dasbor') loadDasbor();
+            if(tab === 'modal') loadModalTokoUI();
             if(tab === 'barang') loadBarang();
             if(tab === 'penjualan') loadPenjualan();
+        }
+
+        // Fitur Auto SKU berdasarkan Nama Produk
+        function generateSKU(nama) {
+            if(!nama) {
+                document.getElementById('sku').value = '';
+                return;
+            }
+            let kodeNama = nama.trim().substring(0, 3).toUpperCase();
+            let angkaAcak = Math.floor(100 + Math.random() * 900);
+            document.getElementById('sku').value = `SKU-${kodeNama}-${angkaAcak}`;
+        }
+
+        // Fitur Hitung Otomatis Harga Jual berdasarkan Margin Persen
+        function hitungHargaJual() {
+            let hargaBeli = parseFloat(document.getElementById('harga_beli').value) || 0;
+            let margin = parseFloat(document.getElementById('margin_persen').value) || 0;
+            if(hargaBeli > 0 && margin >= 0) {
+                let hargaJual = hargaBeli + (hargaBeli * (margin / 100));
+                document.getElementById('harga_jual').value = Math.round(hargaJual);
+            } else {
+                document.getElementById('harga_jual').value = '';
+            }
         }
 
         async function loadBarang() {
@@ -208,8 +300,10 @@
                 
                 data.forEach(item => {
                     html += `<tr>
+                        <td><code>${item.sku || 'SKU-GEN'}</code></td>
                         <td><strong>${item.nama_barang}</strong></td>
                         <td>Rp ${Number(item.harga_beli).toLocaleString('id-ID')}</td>
+                        <td><span style="color:#2563eb; font-weight:600;">${item.margin || 0}%</span></td>
                         <td><span class="badge-green">Rp ${Number(item.harga_jual).toLocaleString('id-ID')}</span></td>
                         <td>${item.stok} unit</td>
                         <td style="text-align: center;">
@@ -220,12 +314,46 @@
                     selectHtml += `<option value="${item.id}" data-jual="${item.harga_jual}">${item.nama_barang} (Stok: ${item.stok})</option>`;
                 });
                 
-                document.getElementById('list-barang').innerHTML = html || '<tr><td colspan="5" style="text-align:center; color:#888;">Belum ada data barang.</td></tr>';
+                document.getElementById('list-barang').innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:#888;">Belum ada data barang.</td></tr>';
                 const selectEl = document.getElementById('select-barang');
                 if(selectEl) selectEl.innerHTML = selectHtml;
-            } catch (err) {
-                console.error("Gagal memuat data barang", err);
-            }
+            } catch (err) { console.error("Gagal memuat barang:", err); }
+        }
+
+        // Modal Toko Fungsi (Pencatatan Modal)
+        let dataModalStore = JSON.parse(localStorage.getItem('data_modal_toko') || '[]');
+        
+        function loadModalTokoUI() {
+            let html = '';
+            let totalModal = 0;
+            dataModalStore.forEach((m) => {
+                totalModal += Number(m.jumlah);
+                html += `<tr>
+                    <td>${m.tanggal}</td>
+                    <td>${m.keterangan || 'Modal Toko'}</td>
+                    <td>Rp ${Number(m.jumlah).toLocaleString('id-ID')}</td>
+                </tr>`;
+            });
+            document.getElementById('list-modal').innerHTML = html || '<tr><td colspan="3" style="text-align:center; color:#888;">Belum ada catatan modal.</td></tr>';
+            document.getElementById('tot-modal').innerText = 'Rp ' + totalModal.toLocaleString('id-ID');
+        }
+
+        function openModalTokoModal() { document.getElementById('modalTokoModal').style.display = 'flex'; }
+        function closeModalToko() { document.getElementById('modalTokoModal').style.display = 'none'; }
+
+        function simpanModalToko(e) {
+            e.preventDefault();
+            const jumlah = parseFloat(document.getElementById('jumlah_modal_input').value);
+            const keterangan = document.getElementById('keterangan_modal').value;
+            dataModalStore.push({
+                tanggal: new Date().toLocaleDateString('id-ID'),
+                jumlah: jumlah,
+                keterangan: keterangan
+            });
+            localStorage.setItem('data_modal_toko', JSON.stringify(dataModalStore));
+            closeModalToko();
+            loadModalTokoUI();
+            loadDasbor();
         }
 
         async function loadPenjualan() {
@@ -234,9 +362,9 @@
                 const data = await res.json();
                 let html = '';
                 data.forEach(item => {
-                    let tanggalFormatted = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-';
+                    let tgl = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-';
                     html += `<tr>
-                        <td>${tanggalFormatted}</td>
+                        <td>${tgl}</td>
                         <td><strong>${item.nama_barang || 'Barang Dihapus'}</strong></td>
                         <td>${item.jumlah} pcs</td>
                         <td>Rp ${Number(item.total_harga).toLocaleString('id-ID')}</td>
@@ -247,65 +375,59 @@
                     </tr>`;
                 });
                 document.getElementById('list-penjualan').innerHTML = html || '<tr><td colspan="6" style="text-align:center; color:#888;">Belum ada catatan penjualan.</td></tr>';
-            } catch (err) {
-                console.error("Gagal memuat data penjualan", err);
-            }
+            } catch (err) { console.error("Gagal memuat penjualan:", err); }
         }
 
         async function loadDasbor() {
             try {
-                const [resP, resB] = await Promise.all([
-                    fetch('/api/penjualan'),
-                    fetch('/api/barang')
-                ]);
+                // Hitung total modal dari penyimpanan modal toko
+                let totalModal = dataModalStore.reduce((acc, curr) => acc + Number(curr.jumlah), 0);
+                document.getElementById('tot-modal').innerText = 'Rp ' + totalModal.toLocaleString('id-ID');
+
+                const [resP, resB] = await Promise.all([fetch('/api/penjualan'), fetch('/api/barang')]);
                 const penjualan = await resP.json();
                 const barang = await resB.json();
 
-                let totalPendapatan = 0;
-                let totalPengeluaranLain = 0;
-                let totalHPP = 0;
-
+                let totalPendapatan = 0, totalPengeluaranLain = 0, totalHPP = 0;
                 penjualan.forEach(p => {
                     totalPendapatan += Number(p.total_harga || 0);
                     totalPengeluaranLain += Number(p.pengeluaran_lain || 0);
                     const b = barang.find(x => x.id === p.barang_id);
-                    if(b) {
-                        totalHPP += (Number(b.harga_beli) * Number(p.jumlah));
-                    }
+                    if(b) totalHPP += (Number(b.harga_beli) * Number(p.jumlah));
                 });
 
                 let totalPengeluaran = totalHPP + totalPengeluaranLain;
                 let keuntunganBersih = totalPendapatan - totalPengeluaran;
 
                 document.getElementById('tot-pendapatan').innerText = 'Rp ' + totalPendapatan.toLocaleString('id-ID');
-                document.getElementById('tot-pengeluaran').innerText = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
                 const keuntEl = document.getElementById('tot-keuntungan');
                 keuntEl.innerText = 'Rp ' + keuntunganBersih.toLocaleString('id-ID');
                 keuntEl.style.color = keuntunganBersih >= 0 ? '#10b981' : '#ef4444';
-            } catch (err) {
-                console.error("Gagal memuat dasbor", err);
-            }
+            } catch (err) { console.error("Gagal memuat dasbor:", err); }
         }
 
         function openModal() {
             document.getElementById('productForm').reset();
             document.getElementById('prod-id').value = '';
             document.getElementById('modal-title').innerText = 'Tambah Produk Baru';
+            generateSKU('');
             document.getElementById('productModal').style.display = 'flex';
         }
         function closeModal() { document.getElementById('productModal').style.display = 'none'; }
-
-        function openPenjualanModal() {
-            loadBarang();
-            document.getElementById('penjualanForm').reset();
-            document.getElementById('penjualanModal').style.display = 'flex';
+        
+        function openPenjualanModal() { 
+            loadBarang(); 
+            document.getElementById('penjualanForm').reset(); 
+            document.getElementById('penjualanModal').style.display = 'flex'; 
         }
         function closePenjualanModal() { document.getElementById('penjualanModal').style.display = 'none'; }
 
         function editBarang(item) {
             document.getElementById('prod-id').value = item.id;
+            document.getElementById('sku').value = item.sku || '';
             document.getElementById('nama_barang').value = item.nama_barang;
             document.getElementById('harga_beli').value = item.harga_beli;
+            document.getElementById('margin_persen').value = item.margin || '';
             document.getElementById('harga_jual').value = item.harga_jual;
             document.getElementById('stok').value = item.stok;
             document.getElementById('modal-title').innerText = 'Edit Produk';
@@ -316,31 +438,26 @@
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
             const payload = {
+                sku: document.getElementById('sku').value,
                 nama_barang: document.getElementById('nama_barang').value,
                 harga_beli: parseFloat(document.getElementById('harga_beli').value),
+                margin: parseFloat(document.getElementById('margin_persen').value) || 0,
                 harga_jual: parseFloat(document.getElementById('harga_jual').value),
                 stok: parseInt(document.getElementById('stok').value)
             };
-            
-            let method = 'POST';
-            if(id) {
-                method = 'PUT';
-                payload.id = parseInt(id);
-            }
-
-            await fetch('/api/barang', {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            await fetch('/api/barang', { 
+                method: id ? 'PUT' : 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(id ? {...payload, id: parseInt(id)} : payload) 
             });
-            closeModal();
+            closeModal(); 
             loadBarang();
         });
 
         async function hapusBarang(id) {
-            if(confirm('Yakin ingin menghapus barang ini?')) {
-                await fetch('/api/barang?id=' + id, { method: 'DELETE' });
-                loadBarang();
+            if(confirm('Yakin ingin menghapus barang ini?')) { 
+                await fetch('/api/barang?id=' + id, { method: 'DELETE' }); 
+                loadBarang(); 
             }
         }
 
@@ -352,30 +469,24 @@
                 harga_satuan: parseFloat(document.getElementById('satuan_jual').value),
                 pengeluaran_lain: parseFloat(document.getElementById('pengeluaran_lain').value) || 0
             };
-            await fetch('/api/penjualan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            closePenjualanModal();
+            await fetch('/api/penjualan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            closePenjualanModal(); 
             loadPenjualan();
         });
 
         async function hapusPenjualan(id) {
-            if(confirm('Yakin ingin menghapus catatan penjualan ini?')) {
-                await fetch('/api/penjualan?id=' + id, { method: 'DELETE' });
-                loadPenjualan();
+            if(confirm('Yakin ingin menghapus catatan penjualan ini?')) { 
+                await fetch('/api/penjualan?id=' + id, { method: 'DELETE' }); 
+                loadPenjualan(); 
             }
         }
 
         document.getElementById('select-barang').addEventListener('change', function() {
-            const selectedOpt = this.options[this.selectedIndex];
-            const hargaJual = selectedOpt.getAttribute('data-jual');
-            if(hargaJual) {
-                document.getElementById('satuan_jual').value = hargaJual;
-            }
+            const hJual = this.options[this.selectedIndex].getAttribute('data-jual');
+            if(hJual) document.getElementById('satuan_jual').value = hJual;
         });
 
+        loadModalTokoUI();
         loadDasbor();
     </script>
 </body>
