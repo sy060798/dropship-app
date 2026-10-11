@@ -75,25 +75,21 @@
 
         <div class="stats-grid">
           <article class="stat-card">
-            <div class="stat-icon teal">Rp</div>
             <div class="stat-label">Total Modal Barang Terjual</div>
             <div class="stat-value" id="statModal">Rp0</div>
           </article>
 
           <article class="stat-card">
-            <div class="stat-icon blue">↗</div>
             <div class="stat-label">Total Penjualan</div>
             <div class="stat-value" id="statPenjualan">Rp0</div>
           </article>
 
           <article class="stat-card">
-            <div class="stat-icon green">+</div>
             <div class="stat-label">Keuntungan Bersih</div>
             <div class="stat-value" id="statUntung">Rp0</div>
           </article>
 
           <article class="stat-card">
-            <div class="stat-icon orange">□</div>
             <div class="stat-label">Jumlah Jenis Barang</div>
             <div class="stat-value" id="statBarang">0</div>
           </article>
@@ -193,11 +189,6 @@
             </div>
           </div>
         </div>
-
-        <p class="helper-text">
-          Maksimal 10 barang ditampilkan per halaman. Data berikutnya ada di
-          halaman selanjutnya.
-        </p>
       </section>
 
       <!-- DATA PENJUALAN -->
@@ -293,16 +284,8 @@
 
         <div class="content-card finance-note">
           <h3>Cara menghitung keuntungan</h3>
-          <p>
-            Modal barang terjual = harga modal × jumlah terjual.
-          </p>
-          <p>
-            Keuntungan kotor = total penjualan − modal barang terjual.
-          </p>
-          <p>
-            Angka ini belum dikurangi ongkir yang ditanggung penjual, biaya
-            admin, iklan, atau pengeluaran lain.
-          </p>
+          <p>Modal barang terjual = harga modal × jumlah terjual.</p>
+          <p>Keuntungan kotor = total penjualan − modal barang terjual.</p>
         </div>
       </section>
 
@@ -312,51 +295,42 @@
     </main>
   </div>
 
-  <!-- FORM TAMBAH / EDIT BARANG -->
+  <!-- MODAL BARANG -->
   <dialog id="barangDialog" class="modal">
     <form id="barangForm">
       <div class="modal-header">
         <h2 id="barangFormTitle">Tambah Barang</h2>
-        <button class="close-btn" type="button" data-close="barangDialog"
-          aria-label="Tutup">×</button>
+        <button class="close-btn" type="button" data-close="barangDialog">×</button>
       </div>
 
       <input type="hidden" id="barangId">
 
       <label for="namaBarang">Nama Barang</label>
-      <input id="namaBarang" name="nama" maxlength="150" required
-        placeholder="Contoh: Kaos Polos">
+      <input id="namaBarang" name="nama" required placeholder="Contoh: Kaos Polos">
 
       <label for="modalBarang">Harga Modal (Rp)</label>
-      <input id="modalBarang" name="harga_modal" type="number"
-        min="0" step="1" required placeholder="25000">
+      <input id="modalBarang" name="harga_modal" type="number" min="0" required placeholder="25000">
 
       <label for="jualBarang">Harga Jual (Rp)</label>
-      <input id="jualBarang" name="harga_jual" type="number"
-        min="0" step="1" required placeholder="40000">
+      <input id="jualBarang" name="harga_jual" type="number" min="0" required placeholder="40000">
 
       <div class="form-preview">
-        Keuntungan per unit:
-        <strong id="previewUntung">Rp0</strong>
+        Keuntungan per unit: <strong id="previewUntung">Rp0</strong>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-light" type="button"
-          data-close="barangDialog">Batal</button>
-        <button class="btn btn-primary" type="submit" id="saveBarang">
-          Simpan Barang
-        </button>
+        <button class="btn btn-light" type="button" data-close="barangDialog">Batal</button>
+        <button class="btn btn-primary" type="submit" id="saveBarang">Simpan Barang</button>
       </div>
     </form>
   </dialog>
 
-  <!-- FORM TAMBAH / EDIT PENJUALAN -->
+  <!-- MODAL PENJUALAN -->
   <dialog id="penjualanDialog" class="modal">
     <form id="penjualanForm">
       <div class="modal-header">
         <h2 id="penjualanFormTitle">Catat Penjualan</h2>
-        <button class="close-btn" type="button"
-          data-close="penjualanDialog" aria-label="Tutup">×</button>
+        <button class="close-btn" type="button" data-close="penjualanDialog">×</button>
       </div>
 
       <input type="hidden" id="penjualanId">
@@ -370,29 +344,23 @@
       </select>
 
       <label for="jumlahPenjualan">Jumlah Terjual</label>
-      <input id="jumlahPenjualan" type="number" min="1" step="1"
-        value="1" required>
+      <input id="jumlahPenjualan" type="number" min="1" value="1" required>
 
       <label for="hargaJualTransaksi">Harga Jual per Unit (Rp)</label>
-      <input id="hargaJualTransaksi" type="number" min="0" step="1"
-        required>
+      <input id="hargaJualTransaksi" type="number" min="0" required>
 
       <div class="form-preview">
-        Perkiraan keuntungan:
-        <strong id="previewProfit">Rp0</strong>
+        Perkiraan keuntungan: <strong id="previewProfit">Rp0</strong>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-light" type="button"
-          data-close="penjualanDialog">Batal</button>
-        <button class="btn btn-primary" type="submit" id="savePenjualan">
-          Simpan Penjualan
-        </button>
+        <button class="btn btn-light" type="button" data-close="penjualanDialog">Batal</button>
+        <button class="btn btn-primary" type="submit" id="savePenjualan">Simpan Penjualan</button>
       </div>
     </form>
   </dialog>
 
-  <!-- Diperbarui: Mengarah ke /api/app.js sesuai struktur folder baru -->
+  <!-- Script mengarah ke folder api/app.js -->
   <script src="/api/app.js" defer></script>
 </body>
 </html>
