@@ -16,6 +16,17 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
+  // Parsing body aman untuk Vercel Serverless Function
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      body = {};
+    }
+  }
+  body = body || {};
+
   const method = req.method;
 
   try {
@@ -29,7 +40,7 @@ module.exports = async (req, res) => {
       return res.status(200).json(rs.rows);
     } 
     else if (method === 'POST') {
-      const { barang_id, jumlah, harga_satuan, pengeluaran_lain } = req.body;
+      const { barang_id, jumlah, harga_satuan, pengeluaran_lain } = body;
       const total_harga = jumlah * harga_satuan;
       const p_lain = pengeluaran_lain || 0;
 
