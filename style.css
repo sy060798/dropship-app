@@ -1,37 +1,47 @@
+/* ==========================================
+   RESET & VARIABEL UTAMA
+   ================================---------- */
 :root {
   --primary: #0f766e;
   --primary-hover: #115e59;
-  --primary-light: #ccfbf1;
-  --bg-main: #f8fafc;
+  --primary-light: #f0fdfa;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --bg-app: #f8fafc;
   --bg-card: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --border-color: #e5e7eb;
   --danger: #ef4444;
-  --success: #22c55e;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --info: #3b82f6;
   --radius: 10px;
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 body {
-  background-color: var(--bg-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-app);
   color: var(--text-main);
   line-height: 1.5;
 }
 
+/* ==========================================
+   LAYOUT UTAMA (APLIKASI)
+   ================================---------- */
 .app {
   display: flex;
   min-height: 100vh;
 }
 
-/* Sidebar */
+/* ==========================================
+   SIDEBAR
+   ================================---------- */
 .sidebar {
   width: 260px;
   background-color: var(--bg-card);
@@ -47,10 +57,10 @@ body {
 }
 
 .brand {
-  padding: 20px;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -59,67 +69,68 @@ body {
   height: 40px;
   background-color: var(--primary);
   color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  border-radius: var(--radius);
+  border-radius: 8px;
 }
 
 .brand strong {
   display: block;
   font-size: 1rem;
+  color: var(--text-main);
 }
 
 .brand small {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .navigation {
-  padding: 16px 12px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.5srem;
   flex: 1;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
-  padding: 10px 14px;
+  padding: 0.75rem 1rem;
   background: none;
   border: none;
   border-radius: var(--radius);
   color: var(--text-muted);
   font-size: 0.95rem;
   font-weight: 500;
-  cursor: pointer;
   text-align: left;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
 .nav-link:hover {
-  background-color: var(--bg-main);
-  color: var(--text-main);
-}
-
-.nav-link.active {
   background-color: var(--primary-light);
   color: var(--primary);
 }
 
+.nav-link.active {
+  background-color: var(--primary);
+  color: white;
+}
+
 .sidebar-footer {
-  padding: 16px 20px;
+  padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-color);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .status-dot {
@@ -129,23 +140,28 @@ body {
   border-radius: 50%;
 }
 
-/* Main Content Area */
+/* ==========================================
+   AREA UTAMA (MAIN CONTENT)
+   ================================---------- */
 .main {
   flex: 1;
   margin-left: 260px;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  gap: 1.5rem;
 }
 
+/* Topbar */
 .topbar {
-  background-color: var(--bg-card);
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  background-color: var(--bg-card);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
 }
 
 .menu-toggle {
@@ -159,7 +175,7 @@ body {
 
 .topbar h1 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .topbar p {
@@ -169,89 +185,114 @@ body {
 
 .topbar-label {
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  background-color: var(--bg-main);
-  padding: 4px 10px;
+  font-weight: bold;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  padding: 0.35rem 0.75rem;
   border-radius: 20px;
-  color: var(--text-muted);
 }
 
-/* Pages Section */
+/* Notice / Alert */
+.notice {
+  padding: 1rem;
+  border-radius: var(--radius);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.9rem;
+  border: 1px solid #99f6e4;
+}
+
+/* ==========================================
+   HALAMAN & KARTU STATISTIK
+   ================================---------- */
 .page {
   display: none;
-  padding: 24px;
-  flex: 1;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .page.active {
-  display: block;
+  display: flex;
 }
 
-/* Welcome Box */
 .welcome {
-  background: linear-gradient(135deg, var(--primary), #0d9488);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: white;
-  padding: 24px;
+  padding: 2rem;
   border-radius: var(--radius);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
   box-shadow: var(--shadow);
 }
 
 .welcome h2 {
   font-size: 1.5rem;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 
 .welcome p {
-  opacity: 0.9;
   font-size: 0.95rem;
+  opacity: 0.9;
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 1rem;
 }
 
 .stat-card {
   background-color: var(--bg-card);
-  padding: 20px;
+  padding: 1.25rem;
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.stat-icon.teal { background-color: #ccfbf1; color: var(--primary); }
+.stat-icon.blue { background-color: #dbeafe; color: var(--info); }
+.stat-icon.green { background-color: #d1fae5; color: var(--success); }
+.stat-icon.orange { background-color: #fef3c7; color: var(--warning); }
 
 .stat-label {
   font-size: 0.85rem;
   color: var(--text-muted);
-  margin-bottom: 8px;
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-main);
 }
 
-/* Content Card & Tables */
+/* ==========================================
+   KONTEN KARTU & TABEL
+   ================================---------- */
 .content-card {
   background-color: var(--bg-card);
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  margin-bottom: 24px;
   overflow: hidden;
 }
 
 .card-heading {
-  padding: 20px;
+  padding: 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -264,7 +305,7 @@ body {
 }
 
 .card-heading p {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
@@ -272,12 +313,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
 .section-heading h2 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .section-heading p {
@@ -287,24 +327,23 @@ body {
 
 .toolbar {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 1rem;
 }
 
 .toolbar input[type="search"] {
   flex: 1;
-  padding: 10px 16px;
+  padding: 0.65rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 0.9rem;
   outline: none;
-  background-color: var(--bg-card);
 }
 
-.toolbar input:focus {
+.toolbar input[type="search"]:focus {
   border-color: var(--primary);
 }
 
+/* Tabel Responsif */
 .table-wrap {
   overflow-x: auto;
 }
@@ -317,61 +356,78 @@ table {
 }
 
 th, td {
-  padding: 14px 20px;
+  padding: 0.85rem 1.25rem;
   border-bottom: 1px solid var(--border-color);
 }
 
 th {
-  background-color: var(--bg-main);
+  background-color: #f9fafb;
   font-weight: 600;
   color: var(--text-muted);
 }
 
-tr:last-child td {
-  border-bottom: none;
+tbody tr:hover {
+  background-color: var(--primary-light);
 }
 
 .empty-state {
   text-align: center;
   color: var(--text-muted);
-  padding: 30px !important;
+  padding: 2rem !important;
 }
 
 /* Pagination */
 .pagination {
-  padding: 16px 20px;
+  padding: 1rem 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid var(--border-color);
   font-size: 0.85rem;
   color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
 }
 
 .pagination-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.5rem;
 }
 
 .helper-text {
   font-size: 0.8rem;
   color: var(--text-muted);
-  margin-top: 8px;
+  text-align: center;
 }
 
-/* Buttons */
+/* Keuangan Catatan */
+.finance-note {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.finance-note h3 {
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+/* ==========================================
+   TOMBOL (BUTTONS)
+   ================================---------- */
 .btn {
-  padding: 10px 18px;
+  padding: 0.6rem 1.2rem;
   border-radius: var(--radius);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s;
+  transition: background 0.2s;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .btn-primary {
@@ -384,13 +440,13 @@ tr:last-child td {
 }
 
 .btn-light {
-  background-color: var(--bg-main);
+  background-color: #f3f4f6;
   color: var(--text-main);
   border: 1px solid var(--border-color);
 }
 
 .btn-light:hover {
-  background-color: var(--border-color);
+  background-color: #e5e7eb;
 }
 
 .btn-danger {
@@ -402,30 +458,40 @@ tr:last-child td {
   background-color: #fecaca;
 }
 
-/* Modals / Dialog */
-dialog.modal {
+/* ==========================================
+   MODAL / POPUP (DIALOG)
+   ================================---------- */
+.modal {
+  padding: 0;
   border: none;
   border-radius: var(--radius);
-  padding: 24px;
   width: 100%;
   max-width: 450px;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-  margin: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  background-color: var(--bg-card);
 }
 
-dialog::backdrop {
+.modal::backdrop {
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 0.5rem;
 }
 
 .modal-header h2 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 .close-btn {
@@ -436,94 +502,68 @@ dialog::backdrop {
   color: var(--text-muted);
 }
 
-form label {
-  display: block;
+.modal label {
   font-size: 0.85rem;
   font-weight: 500;
-  margin-bottom: 6px;
   color: var(--text-main);
+  margin-top: 0.25rem;
 }
 
-form input, form select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px style;
+.modal input,
+.modal select {
+  padding: 0.65rem 0.85rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 0.9rem;
-  margin-bottom: 16px;
   outline: none;
 }
 
-form input:focus, form select:focus {
+.modal input:focus,
+.modal select:focus {
   border-color: var(--primary);
 }
 
 .form-preview {
-  background-color: var(--bg-main);
-  padding: 12px 16px;
+  background-color: var(--primary-light);
+  padding: 0.75rem;
   border-radius: var(--radius);
   font-size: 0.85rem;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  color: var(--primary);
+  margin-top: 0.5rem;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
-/* Finance Section Note */
-.finance-note {
-  padding: 24px;
-}
-
-.finance-note h3 {
-  margin-bottom: 12px;
-}
-
-.finance-note p {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-/* Footer */
+/* ==========================================
+   FOOTER UTAMA
+   ================================---------- */
 .footer {
   text-align: center;
-  padding: 20px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
-  border-top: 1px solid var(--border-color);
-  background-color: var(--bg-card);
+  padding: 1rem 0;
 }
 
-/* Notice Banner */
-.notice {
-  background-color: var(--primary-light);
-  color: var(--primary);
-  padding: 12px 20px;
-  margin: 16px 24px 0 24px;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-/* Responsive Styles */
+/* ==========================================
+   RESPONSIVE DESIGN (MOBILE)
+   ================================---------- */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
   }
 
-  .sidebar.open {
+  .sidebar.show {
     transform: translateX(0);
   }
 
   .main {
     margin-left: 0;
+    padding: 1rem;
   }
 
   .menu-toggle {
@@ -531,9 +571,12 @@ form input:focus, form select:focus {
   }
 
   .welcome {
-    
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 1rem;
+  }
+
+  .toolbar {
+    flex-direction: column;
   }
 }
