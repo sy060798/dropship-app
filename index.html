@@ -3,107 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Dropship</title>
+    <title>Aplikasi Manajemen Dropship</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts Inter untuk tampilan modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h2>Aplikasi Manajemen Dropship</h2>
-    </header>
-    
-    <nav>
-        <button onclick="switchTab('dasbor')" class="active" id="nav-dasbor">Dasbor</button>
-        <button onclick="switchTab('barang')" id="nav-barang">Data Barang</button>
-        <button onclick="switchTab('penjualan')" id="nav-penjualan">Data Penjualan</button>
-    </nav>
+    <div class="app-layout">
+        <!-- HEADER / NAVBAR SAMPING/ATAS -->
+        <header class="app-header">
+            <div class="header-brand">
+                <h2>🚀 DropshipPro</h2>
+                <span>Manajemen Toko & Keuangan</span>
+            </div>
+            <nav class="app-nav">
+                <button onclick="switchTab('dasbor')" class="active" id="nav-dasbor">
+                    📊 Dasbor
+                </button>
+                <button onclick="switchTab('barang')" id="nav-barang">
+                    📦 Data Barang
+                </button>
+                <button onclick="switchTab('penjualan')" id="nav-penjualan">
+                    💰 Data Penjualan
+                </button>
+            </nav>
+        </header>
 
-    <div class="container">
-        <!-- DASBOR -->
-        <div id="tab-dasbor" class="tab-content">
-            <h3>Ringkasan Keuangan & Kinerja</h3>
-            <div class="card-container">
-                <div class="card">
-                    <h4>Total Pendapatan</h4>
-                    <p id="tot-pendapatan">Rp 0</p>
+        <!-- KONTEN UTAMA -->
+        <main class="main-container">
+            <!-- TAB DASBOR -->
+            <div id="tab-dasbor" class="tab-content">
+                <div class="content-header">
+                    <h3>Ringkasan Kinerja Toko</h3>
+                    <p class="subtitle">Pantau pendapatan, pengeluaran, dan keuntungan bersih secara real-time.</p>
                 </div>
-                <div class="card">
-                    <h4>Total Pengeluaran</h4>
-                    <p id="tot-pengeluaran">Rp 0</p>
-                </div>
-                <div class="card">
-                    <h4>Keuntungan Bersih</h4>
-                    <p id="tot-keuntungan" style="color: #27ae60; font-weight: bold;">Rp 0</p>
+                
+                <div class="card-container">
+                    <div class="card card-pendapatan">
+                        <div class="card-icon">📈</div>
+                        <div class="card-info">
+                            <h4>Total Pendapatan</h4>
+                            <p id="tot-pendapatan">Rp 0</p>
+                        </div>
+                    </div>
+                    <div class="card card-pengeluaran">
+                        <div class="card-icon">📉</div>
+                        <div class="card-info">
+                            <h4>Total Pengeluaran (HPP + Lainnya)</h4>
+                            <p id="tot-pengeluaran">Rp 0</p>
+                        </div>
+                    </div>
+                    <div class="card card-keuntungan">
+                        <div class="card-icon">✨</div>
+                        <div class="card-info">
+                            <h4>Keuntungan Bersih</h4>
+                            <p id="tot-keuntungan">Rp 0</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- DATA BARANG -->
-        <div id="tab-barang" class="tab-content" style="display:none;">
-            <h3>Data Barang</h3>
-            <button class="btn-success" onclick="openModal()">Tambah Produk</button>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nama Barang</th>
-                        <th>Harga Beli</th>
-                        <th>Harga Jual</th>
-                        <th>Stok</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="list-barang">
-                    <!-- Data barang akan dimuat di sini -->
-                </tbody>
-            </table>
-        </div>
+            <!-- TAB DATA BARANG -->
+            <div id="tab-barang" class="tab-content" style="display:none;">
+                <div class="content-header-flex">
+                    <div>
+                        <h3>Manajemen Data Barang</h3>
+                        <p class="subtitle">Kelola inventaris produk, harga beli, dan harga jual.</p>
+                    </div>
+                    <button class="btn-success" onclick="openModal()">+ Tambah Produk</button>
+                </div>
 
-        <!-- DATA PENJUALAN -->
-        <div id="tab-penjualan" class="tab-content" style="display:none;">
-            <h3>Data Penjualan & Pengeluaran</h3>
-            <button class="btn-success" onclick="openPenjualanModal()">Catat Penjualan</button>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Barang</th>
-                        <th>Jumlah</th>
-                        <th>Total Harga</th>
-                        <th>Pengeluaran Lain</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="list-penjualan">
-                    <!-- Data penjualan akan dimuat di sini -->
-                </tbody>
-            </table>
-        </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama Barang</th>
+                                <th>Harga Beli</th>
+                                <th>Harga Jual</th>
+                                <th>Stok</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-barang">
+                            <!-- Data barang dimuat dinamis -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB DATA PENJUALAN -->
+            <div id="tab-penjualan" class="tab-content" style="display:none;">
+                <div class="content-header-flex">
+                    <div>
+                        <h3>Riwayat Penjualan & Pengeluaran</h3>
+                        <p class="subtitle">Catat transaksi penjualan barang dan biaya operasional.</p>
+                    </div>
+                    <button class="btn-success" onclick="openPenjualanModal()">+ Catat Penjualan</button>
+                </div>
+
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Barang</th>
+                                <th>Jumlah</th>
+                                <th>Total Harga</th>
+                                <th>Pengeluaran Lain</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-penjualan">
+                            <!-- Data penjualan dimuat dinamis -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- MODAL PRODUK (TAMBAH / EDIT) -->
     <div id="productModal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title">Tambah Produk</h3>
+            <div class="modal-header">
+                <h3 id="modal-title">Tambah Produk</h3>
+                <button class="btn-close" onclick="closeModal()">&times;</button>
+            </div>
             <form id="productForm">
                 <input type="hidden" id="prod-id">
                 <div class="form-group">
                     <label>Nama Barang</label>
-                    <input type="text" id="nama_barang" required>
+                    <input type="text" id="nama_barang" placeholder="Contoh: Kemeja Flanel" required>
                 </div>
                 <div class="form-group">
-                    <label>Harga Beli</label>
-                    <input type="number" id="harga_beli" required>
+                    <label>Harga Beli (Modal)</label>
+                    <input type="number" id="harga_beli" placeholder="Contoh: 50000" required>
                 </div>
                 <div class="form-group">
                     <label>Harga Jual</label>
-                    <input type="number" id="harga_jual" required>
+                    <input type="number" id="harga_jual" placeholder="Contoh: 85000" required>
                 </div>
                 <div class="form-group">
-                    <label>Stok</label>
-                    <input type="number" id="stok" required>
+                    <label>Stok Awal</label>
+                    <input type="number" id="stok" placeholder="Contoh: 20" required>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="submit" class="btn-primary" style="flex:1;">Simpan</button>
-                    <button type="button" class="btn-danger" style="flex:1;" onclick="closeModal()">Batal</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan Produk</button>
                 </div>
             </form>
         </div>
@@ -112,27 +158,30 @@
     <!-- MODAL PENJUALAN -->
     <div id="penjualanModal" class="modal">
         <div class="modal-content">
-            <h3>Catat Penjualan Baru</h3>
+            <div class="modal-header">
+                <h3>Catat Penjualan Baru</h3>
+                <button class="btn-close" onclick="closePenjualanModal()">&times;</button>
+            </div>
             <form id="penjualanForm">
                 <div class="form-group">
                     <label>Pilih Barang</label>
-                    <select id="select-barang" required style="width:100%; padding:8px; box-sizing:border-box;"></select>
+                    <select id="select-barang" required></select>
                 </div>
                 <div class="form-group">
                     <label>Jumlah Terjual</label>
-                    <input type="number" id="jml_jual" required>
+                    <input type="number" id="jml_jual" placeholder="1" required>
                 </div>
                 <div class="form-group">
                     <label>Harga Satuan Jual</label>
-                    <input type="number" id="satuan_jual" required>
+                    <input type="number" id="satuan_jual" placeholder="Otomatis terisi dari harga jual" required>
                 </div>
                 <div class="form-group">
-                    <label>Pengeluaran Lain (Opsional/Ongkir, dll)</label>
+                    <label>Pengeluaran Lain (Opsional / Ongkir)</label>
                     <input type="number" id="pengeluaran_lain" value="0">
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="submit" class="btn-primary" style="flex:1;">Simpan Penjualan</button>
-                    <button type="button" class="btn-danger" style="flex:1;" onclick="closePenjualanModal()">Batal</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closePenjualanModal()">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan Penjualan</button>
                 </div>
             </form>
         </div>
@@ -141,7 +190,7 @@
     <script>
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.app-nav button').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).style.display = 'block';
             document.getElementById('nav-' + tab).classList.add('active');
             
@@ -159,19 +208,19 @@
                 
                 data.forEach(item => {
                     html += `<tr>
-                        <td>${item.nama_barang}</td>
+                        <td><strong>${item.nama_barang}</strong></td>
                         <td>Rp ${Number(item.harga_beli).toLocaleString('id-ID')}</td>
-                        <td>Rp ${Number(item.harga_jual).toLocaleString('id-ID')}</td>
-                        <td>${item.stok}</td>
-                        <td>
-                            <button class="btn-primary" onclick='editBarang(${JSON.stringify(item)})'>Edit</button>
-                            <button class="btn-danger" onclick="hapusBarang(${item.id})">Hapus</button>
+                        <td><span class="badge-green">Rp ${Number(item.harga_jual).toLocaleString('id-ID')}</span></td>
+                        <td>${item.stok} unit</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-edit" onclick='editBarang(${JSON.stringify(item)})'>Edit</button>
+                            <button class="btn-action btn-delete" onclick="hapusBarang(${item.id})">Hapus</button>
                         </td>
                     </tr>`;
                     selectHtml += `<option value="${item.id}" data-jual="${item.harga_jual}">${item.nama_barang} (Stok: ${item.stok})</option>`;
                 });
                 
-                document.getElementById('list-barang').innerHTML = html;
+                document.getElementById('list-barang').innerHTML = html || '<tr><td colspan="5" style="text-align:center; color:#888;">Belum ada data barang.</td></tr>';
                 const selectEl = document.getElementById('select-barang');
                 if(selectEl) selectEl.innerHTML = selectHtml;
             } catch (err) {
@@ -185,16 +234,19 @@
                 const data = await res.json();
                 let html = '';
                 data.forEach(item => {
+                    let tanggalFormatted = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-';
                     html += `<tr>
-                        <td>${item.tanggal || '-'}</td>
-                        <td>${item.nama_barang || 'Barang Dihapus'}</td>
-                        <td>${item.jumlah}</td>
+                        <td>${tanggalFormatted}</td>
+                        <td><strong>${item.nama_barang || 'Barang Dihapus'}</strong></td>
+                        <td>${item.jumlah} pcs</td>
                         <td>Rp ${Number(item.total_harga).toLocaleString('id-ID')}</td>
                         <td>Rp ${Number(item.pengeluaran_lain || 0).toLocaleString('id-ID')}</td>
-                        <td><button class="btn-danger" onclick="hapusPenjualan(${item.id})">Hapus</button></td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-delete" onclick="hapusPenjualan(${item.id})">Hapus</button>
+                        </td>
                     </tr>`;
                 });
-                document.getElementById('list-penjualan').innerHTML = html;
+                document.getElementById('list-penjualan').innerHTML = html || '<tr><td colspan="6" style="text-align:center; color:#888;">Belum ada catatan penjualan.</td></tr>';
             } catch (err) {
                 console.error("Gagal memuat data penjualan", err);
             }
@@ -227,7 +279,9 @@
 
                 document.getElementById('tot-pendapatan').innerText = 'Rp ' + totalPendapatan.toLocaleString('id-ID');
                 document.getElementById('tot-pengeluaran').innerText = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
-                document.getElementById('tot-keuntungan').innerText = 'Rp ' + keuntunganBersih.toLocaleString('id-ID');
+                const keuntEl = document.getElementById('tot-keuntungan');
+                keuntEl.innerText = 'Rp ' + keuntunganBersih.toLocaleString('id-ID');
+                keuntEl.style.color = keuntunganBersih >= 0 ? '#10b981' : '#ef4444';
             } catch (err) {
                 console.error("Gagal memuat dasbor", err);
             }
@@ -236,7 +290,7 @@
         function openModal() {
             document.getElementById('productForm').reset();
             document.getElementById('prod-id').value = '';
-            document.getElementById('modal-title').innerText = 'Tambah Produk';
+            document.getElementById('modal-title').innerText = 'Tambah Produk Baru';
             document.getElementById('productModal').style.display = 'flex';
         }
         function closeModal() { document.getElementById('productModal').style.display = 'none'; }
@@ -314,7 +368,6 @@
             }
         }
 
-        // Auto isi harga satuan otomatis saat barang dipilih di form penjualan
         document.getElementById('select-barang').addEventListener('change', function() {
             const selectedOpt = this.options[this.selectedIndex];
             const hargaJual = selectedOpt.getAttribute('data-jual');
@@ -323,7 +376,6 @@
             }
         });
 
-        // Muat data dasbor pertama kali saat halaman dibuka
         loadDasbor();
     </script>
 </body>
