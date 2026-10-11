@@ -1,0 +1,13 @@
+{
+  "name": "dropship-app",
+  "version": "1.0.0",
+  "description": "Aplikasi Dropship dengan Turso DB dan Vercel",
+  "main": "api/app.js",
+  "scripts": {
+    "start": "node api/app.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.6.0",
+    "express": "^4.19.2"
+  }
+}
