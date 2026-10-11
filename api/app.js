@@ -1,456 +1,548 @@
-let barangList = [];
-let penjualanList = [];
+document.addEventListener("DOMContentLoaded", () => {
+  // --- STATE APLIKASI ---
+  let barangList = [];
+  let penjualanList = [];
 
-let barangPage = 1;
-let penjualanPage = 1;
-const limit = 10;
+  let barangPageCurrent = 1;
+  const barangPerPage = 10;
+  let penjualanPageCurrent = 1;
+  const penjualanPerPage = 10;
 
-document.addEventListener('DOMContentLoaded', () => {
-  initNavigation();
-  initModals();
-  loadData();
+  // --- ELEMEN DOM ---
+  const navLinks = document.querySelectorAll(".nav-link");
+  const pages = document.querySelectorAll(".page");
+  const pageTitle = document.getElementById("pageTitle");
+  const todayDateEl = document.getElementById("todayDate");
 
-  document.getElementById('tanggalPenjualan').valueAsDate = new Date();
-});
+  // Format Tanggal Hari Ini di Topbar
+  if (todayDateEl) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    todayDateEl.textContent = new Date().toLocaleDateString('id-ID', options);
+  }
 
-function initNavigation() {
-  const navLinks = document.querySelectorAll('.nav-link, [data-go]');
-  const sidebar = document.getElementById('sidebar');
-  const menuToggle = document.getElementById('menuToggle');
-
-  menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-  });
-
+  // --- NAVIGASI HALAMAN ---
   navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const targetPage = link.getAttribute('data-page') || link.getAttribute('data-go');
-      if (!targetPage) return;
+    link.addEventListener("click", () => {
+      const targetPage = link.getAttribute("data-page");
 
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(`page-${targetPage}`).classList.add('active');
+      navLinks.forEach(item => item.classList.remove("active"));
+      link.classList.add("active");
 
-      document.querySelectorAll('.nav-link').forEach(nav => {
-        nav.classList.toggle('active', nav.getAttribute('data-page') === targetPage);
+      pages.forEach(page => {
+        page.classList.remove("active");
+        if (page.id === `page-${targetPage}`) {
+          page.classList.add("active");
+        }
       });
 
-      const titles = {
-        dashboard: 'Dashboard',
-        barang: 'Data Barang',
-        penjualan: 'Data Penjualan',
-        keuangan: 'Modal & Keuntungan'
-      };
-      document.getElementById('pageTitle').textContent = titles[targetPage] || 'Dashboard';
-      sidebar.classList.remove('open');
-    });
-  });
-}
-
-function initModals() {
-  const barangDialog = document.getElementById('barangDialog');
-  document.getElementById('addBarang').addEventListener('click', () => {
-    document.getElementById('barangForm').reset();
-    document.getElementById('barangId').value = '';
-    document.getElementById('barangFormTitle').textContent = 'Tambah Barang';
-    document.getElementById('previewUntung').textContent = 'Rp0';
-    barangDialog.showModal();
-  });
-
-  const penjualanDialog = document.getElementById('penjualanDialog');
-  document.getElementById('addPenjualan').addEventListener('click', () => {
-    document.getElementById('penjualanForm').reset();
-    document.getElementById('penjualanId').value = '';
-    document.getElementById('penjualanFormTitle').textContent = 'Catat Penjualan';
-    document.getElementById('tanggalPenjualan').valueAsDate = new Date();
-    document.getElementById('previewProfit').textContent = 'Rp0';
-    penjualanDialog.showModal();
-  });
-
-  document.querySelectorAll('[data-close]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const modalId = btn.getAttribute('data-close');
-      document.getElementById(modalId).close();
+      if (targetPage === "dashboard") {
+        pageTitle.textContent = "Dashboard";
+        loadDashboard();
+      } else if (targetPage === "barang") {
+        pageTitle.textContent = "Data Barang";
+        loadBarang();
+      } else if (targetPage === "penjualan") {
+        pageTitle.textContent = "Data Penjualan";
+        loadPenjualan();
+      } else if (targetPage === "keuangan") {
+        pageTitle.textContent = "Modal & Keuntungan";
+        loadKeuangan();
+      }
     });
   });
 
-  const modalHModal = document.getElementById('modalBarang');
-  const modalHJual = document.getElementById('jualBarang');
-  const updateBarangPreview = () => {
-    const m = Number(modalHModal.value) || 0;
-    const j = Number(modalHJual.value) || 0;
-    const untung = Math.max(0, j - m);
-    document.getElementById('previewUntung').textContent = formatRupiah(untung);
-  };
-  modalHModal.addEventListener('input', updateBarangPreview);
-  modalHJual.addEventListener('input', updateBarangPreview);
+  // Shortcut tombol navigasi cepat ([data-go])
+  document.querySelectorAll("[data-go]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-go");
+      const targetLink = document.querySelector(`.nav-link[data-page="${target}"]`);
+      if (targetLink) targetLink.click();
+    });
+  });
 
-  const pilihBarang = document.getElementById('pilihBarang');
-  const jmlJual = document.getElementById('jumlahPenjualan');
-  const hJualTrx = document.getElementById('hargaJualTransaksi');
+  // Toggle Sidebar Mobile
+  const menuToggle = document.getElementById("menuToggle");
+  const sidebar = document.getElementById("sidebar");
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("show");
+    });
+  }
 
-  pilihBarang.addEventListener('change', () => {
-    const selectedId = pilihBarang.value;
-    const item = barangList.find(b => b.id == selectedId);
-    if (item) {
-      hJualTrx.value = item.harga_jual;
-      updatePenjualanPreview();
+  // Helper Format Rupiah
+  function formatRupiah(number) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
+  }
+
+  // Notifikasi Pesan Singkat
+  function showNotice(message, isError = false) {
+    const notice = document.getElementById("notice");
+    if (!notice) return;
+    notice.textContent = message;
+    notice.style.backgroundColor = isError ? "#fee2e2" : "#f0fdfa";
+    notice.style.color = isError ? "#ef4444" : "#0f766e";
+    notice.style.borderColor = isError ? "#fecaca" : "#99f6e4";
+    notice.hidden = false;
+    setTimeout(() => {
+      notice.hidden = true;
+    }, 4000);
+  }
+
+  // ==========================================
+  // 1. MODUL DATA BARANG
+  // ==========================================
+  async function loadBarang(search = "") {
+    try {
+      const res = await fetch(`/api/barang${search ? `?search=${encodeURIComponent(search)}` : ''}`);
+      barangList = await res.json();
+      renderBarangTable();
+      populateBarangDropdown();
+    } catch (err) {
+      console.error("Gagal memuat barang:", err);
+      showNotice("Gagal memuat data barang dari server.", true);
+    }
+  }
+
+  function renderBarangTable() {
+    const tbody = document.getElementById("barangTable");
+    const info = document.getElementById("barangInfo");
+    const pageSpan = document.getElementById("barangPage");
+    if (!tbody) return;
+
+    if (barangList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Belum ada data barang.</td></tr>`;
+      if (info) info.textContent = "Menampilkan 0 barang";
+      if (pageSpan) pageSpan.textContent = "1 / 1";
+      return;
+    }
+
+    const totalPages = Math.ceil(barangList.length / barangPerPage) || 1;
+    if (barangPageCurrent > totalPages) barangPageCurrent = totalPages;
+
+    const start = (barangPageCurrent - 1) * barangPerPage;
+    const paginated = barangList.slice(start, start + barangPerPage);
+
+    tbody.innerHTML = paginated.map((item, idx) => {
+      const untung = item.harga_jual - item.harga_modal;
+      return `
+        <tr>
+          <td>${start + idx + 1}</td>
+          <td><strong>${escapeHtml(item.nama)}</strong></td>
+          <td>${formatRupiah(item.harga_modal)}</td>
+          <td>${formatRupiah(item.harga_jual)}</td>
+          <td style="color: #10b981; font-weight: 600;">${formatRupiah(untung)}</td>
+          <td>
+            <button class="btn btn-light" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="window.editBarang(${item.id})">Edit</button>
+            <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="window.deleteBarang(${item.id})">Hapus</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    if (info) info.textContent = `Menampilkan ${start + 1} - ${start + paginated.length} dari ${barangList.length} barang`;
+    if (pageSpan) pageSpan.textContent = `${barangPageCurrent} / ${totalPages}`;
+  }
+
+  // Pencarian Barang
+  document.getElementById("searchBarang")?.addEventListener("input", (e) => {
+    barangPageCurrent = 1;
+    loadBarang(e.target.value);
+  });
+
+  // Pagination Barang
+  document.getElementById("barangPrev")?.addEventListener("click", () => {
+    if (barangPageCurrent > 1) {
+      barangPageCurrent--;
+      renderBarangTable();
+    }
+  });
+  document.getElementById("barangNext")?.addEventListener("click", () => {
+    const totalPages = Math.ceil(barangList.length / barangPerPage) || 1;
+    if (barangPageCurrent < totalPages) {
+      barangPageCurrent++;
+      renderBarangTable();
     }
   });
 
-  const updatePenjualanPreview = () => {
-    const selectedId = pilihBarang.value;
-    const item = barangList.find(b => b.id == selectedId);
+  // Form Tambah/Edit Barang Dialog
+  const barangDialog = document.getElementById("barangDialog");
+  const barangForm = document.getElementById("barangForm");
+
+  document.getElementById("addBarang")?.addEventListener("click", () => {
+    barangForm.reset();
+    document.getElementById("barangId").value = "";
+    document.getElementById("barangFormTitle").textContent = "Tambah Barang";
+    document.getElementById("previewUntung").textContent = "Rp0";
+    barangDialog?.showModal();
+  });
+
+  // Preview keuntungan otomatis di form barang
+  const modalInput = document.getElementById("modalBarang");
+  const jualInput = document.getElementById("jualBarang");
+  function updateBarangPreview() {
+    const m = Number(modalInput?.value) || 0;
+    const j = Number(jualInput?.value) || 0;
+    const preview = document.getElementById("previewUntung");
+    if (preview) preview.textContent = formatRupiah(j - m);
+  }
+  modalInput?.addEventListener("input", updateBarangPreview);
+  jualInput?.addEventListener("input", updateBarangPreview);
+
+  barangForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("barangId").value;
+    const nama = document.getElementById("namaBarang").value;
+    const harga_modal = modalInput.value;
+    const harga_jual = jualInput.value;
+
+    const method = id ? "PUT" : "POST";
+    const payload = id ? { id, nama, harga_modal, harga_jual } : { nama, harga_modal, harga_jual };
+
+    try {
+      const res = await fetch("/api/barang", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan barang");
+
+      showNotice(data.message);
+      barangDialog?.close();
+      loadBarang();
+    } catch (err) {
+      showNotice(err.message, true);
+    }
+  });
+
+  // Global window methods untuk Edit & Hapus Barang
+  window.editBarang = (id) => {
+    const item = barangList.find(b => b.id === id);
     if (!item) return;
-    const qty = Number(jmlJual.value) || 0;
-    const price = Number(hJualTrx.value) || 0;
-    const profit = (price - item.harga_modal) * qty;
-    document.getElementById('previewProfit').textContent = formatRupiah(profit);
+    document.getElementById("barangId").value = item.id;
+    document.getElementById("namaBarang").value = item.nama;
+    document.getElementById("modalBarang").value = item.harga_modal;
+    document.getElementById("jualBarang").value = item.harga_jual;
+    document.getElementById("barangFormTitle").textContent = "Edit Barang";
+    updateBarangPreview();
+    barangDialog?.showModal();
   };
 
-  jmlJual.addEventListener('input', updatePenjualanPreview);
-  hJualTrx.addEventListener('input', updatePenjualanPreview);
-
-  document.getElementById('barangForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('barangId').value;
-    const payload = {
-      nama: document.getElementById('namaBarang').value,
-      harga_modal: Number(modalHModal.value),
-      harga_jual: Number(modalHJual.value)
-    };
-
-    const url = id ? `/api/barang?id=${id}` : '/api/barang';
-    const method = id ? 'PUT' : 'POST';
-
+  window.deleteBarang = async (id) => {
+    if (!confirm("Yakin ingin menghapus barang ini?")) return;
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const res = await fetch("/api/barang", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
       });
-      if (!res.ok) throw new Error('Gagal menyimpan barang');
-      barangDialog.close();
-      loadData();
-      showNotice('Barang berhasil disimpan!');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menghapus");
+      showNotice(data.message);
+      loadBarang();
     } catch (err) {
-      alert(err.message);
+      showNotice(err.message, true);
     }
-  });
+  };
 
-  document.getElementById('penjualanForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('penjualanId').value;
-    const payload = {
-      tanggal: document.getElementById('tanggalPenjualan').value,
-      barang_id: Number(pilihBarang.value),
-      jumlah: Number(jmlJual.value),
-      harga_jual_satuan: Number(hJualTrx.value)
-    };
 
-    const url = id ? `/api/penjualan?id=${id}` : '/api/penjualan';
-    const method = id ? 'PUT' : 'POST';
-
+  // ==========================================
+  // 2. MODUL DATA PENJUALAN
+  // ==========================================
+  async function loadPenjualan(search = "") {
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Gagal menyimpan penjualan');
-      penjualanDialog.close();
-      loadData();
-      showNotice('Penjualan berhasil dicatat!');
+      const res = await fetch(`/api/penjualan${search ? `?search=${encodeURIComponent(search)}` : ''}`);
+      penjualanList = await res.json();
+      renderPenjualanTable();
+      loadDashboardStats();
     } catch (err) {
-      alert(err.message);
+      console.error("Gagal memuat penjualan:", err);
     }
-  });
-
-  document.getElementById('searchBarang').addEventListener('input', (e) => {
-    barangPage = 1;
-    renderBarangTable(e.target.value);
-  });
-
-  document.getElementById('barangPrev').addEventListener('click', () => {
-    if (barangPage > 1) { barangPage--; renderBarangTable(document.getElementById('searchBarang').value); }
-  });
-  document.getElementById('barangNext').addEventListener('click', () => {
-    barangPage++; renderBarangTable(document.getElementById('searchBarang').value);
-  });
-
-  document.getElementById('searchPenjualan').addEventListener('input', (e) => {
-    penjualanPage = 1;
-    renderPenjualanTable(e.target.value);
-  });
-
-  document.getElementById('penjualanPrev').addEventListener('click', () => {
-    if (penjualanPage > 1) { penjualanPage--; renderPenjualanTable(document.getElementById('searchPenjualan').value); }
-  });
-  document.getElementById('penjualanNext').addEventListener('click', () => {
-    penjualanPage++; renderPenjualanTable(document.getElementById('searchPenjualan').value);
-  });
-
-  document.getElementById('downloadBarang').addEventListener('click', () => downloadCSV('barang', barangList));
-  document.getElementById('downloadPenjualan').addEventListener('click', () => downloadCSV('penjualan', penjualanList));
-  document.getElementById('downloadKeuangan').addEventListener('click', () => downloadCSV('keuangan', penjualanList));
-}
-
-async function loadData() {
-  try {
-    const [resBarang, resPenjualan] = await Promise.all([
-      fetch('/api/barang'),
-      fetch('/api/penjualan')
-    ]);
-
-    if (resBarang.ok) barangList = await resBarang.json();
-    if (resPenjualan.ok) penjualanList = await resPenjualan.json();
-
-    renderDashboard();
-    renderBarangTable();
-    renderPenjualanTable();
-    renderKeuangan();
-    populateSelectBarang();
-  } catch (err) {
-    console.error('Gagal memuat data:', err);
-    showNotice('Gagal terhubung ke database server.', true);
-  }
-}
-
-function renderDashboard() {
-  const totalBarang = barangList.length;
-  let totalModalTerjual = 0;
-  let totalOmzet = 0;
-  let totalUntung = 0;
-
-  penjualanList.forEach(p => {
-    const b = barangList.find(item => item.id == p.barang_id);
-    const modalSatuan = b ? b.harga_modal : 0;
-    const modalTrx = modalSatuan * p.jumlah;
-    const omzetTrx = p.harga_jual_satuan * p.jumlah;
-
-    totalModalTerjual += modalTrx;
-    totalOmzet += omzetTrx;
-    totalUntung += (omzetTrx - modalTrx);
-  });
-
-  document.getElementById('statModal').textContent = formatRupiah(totalModalTerjual);
-  document.getElementById('statPenjualan').textContent = formatRupiah(totalOmzet);
-  document.getElementById('statUntung').textContent = formatRupiah(totalUntung);
-  document.getElementById('statBarang').textContent = totalBarang;
-
-  const recentTbody = document.getElementById('recentSales');
-  if (penjualanList.length === 0) {
-    recentTbody.innerHTML = `<tr><td colspan="5" class="empty-state">Belum ada data penjualan</td></tr>`;
-    return;
   }
 
-  const recent = [...penjualanList].slice(0, 5);
-  recentTbody.innerHTML = recent.map(p => {
-    const b = barangList.find(item => item.id == p.barang_id);
-    const nama = b ? b.nama : 'Barang Dihapus';
-    const omzet = p.harga_jual_satuan * p.jumlah;
-    const modal = (b ? b.harga_modal : 0) * p.jumlah;
-    const untung = omzet - modal;
+  function renderPenjualanTable() {
+    const tbody = document.getElementById("penjualanTable");
+    const info = document.getElementById("penjualanInfo");
+    const pageSpan = document.getElementById("penjualanPage");
+    if (!tbody) return;
 
-    return `
+    if (penjualanList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Belum ada data penjualan.</td></tr>`;
+      if (info) info.textContent = "Menampilkan 0 transaksi";
+      if (pageSpan) pageSpan.textContent = "1 / 1";
+      return;
+    }
+
+    const totalPages = Math.ceil(penjualanList.length / penjualanPerPage) || 1;
+    if (penjualanPageCurrent > totalPages) penjualanPageCurrent = totalPages;
+
+    const start = (penjualanPageCurrent - 1) * penjualanPerPage;
+    const paginated = penjualanList.slice(start, start + penjualanPerPage);
+
+    tbody.innerHTML = paginated.map((item, idx) => `
       <tr>
-        <td>${formatDate(p.tanggal)}</td>
-        <td><strong>${escapeHtml(nama)}</strong></td>
-        <td>${p.jumlah}</td>
-        <td>${formatRupiah(omzet)}</td>
-        <td><span style="color: #16a34a; font-weight:600;">+${formatRupiah(untung)}</span></td>
+        <td>${start + idx + 1}</td>
+        <td>${item.tanggal}</td>
+        <td><strong>${escapeHtml(item.nama_barang || "Barang Dihapus")}</strong></td>
+        <td>${item.jumlah}</td>
+        <td>${formatRupiah(item.total_modal)}</td>
+        <td>${formatRupiah(item.total_penjualan)}</td>
+        <td style="color: #10b981; font-weight: 600;">${formatRupiah(item.keuntungan)}</td>
+        <td>
+          <button class="btn btn-light" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="window.editPenjualan(${item.id})">Edit</button>
+          <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="window.deletePenjualan(${item.id})">Hapus</button>
+        </td>
       </tr>
-    `;
-  }).join('');
-}
+    `).join("");
 
-function renderBarangTable(search = '') {
-  const filtered = barangList.filter(b => b.nama.toLowerCase().includes(search.toLowerCase()));
-  const totalPages = Math.ceil(filtered.length / limit) || 1;
-  if (barangPage > totalPages) barangPage = totalPages;
-
-  const start = (barangPage - 1) * limit;
-  const paginated = filtered.slice(start, start + limit);
-
-  const tbody = document.getElementById('barangTable');
-  if (paginated.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Tidak ada data barang ditemukan</td></tr>`;
-  } else {
-    tbody.innerHTML = paginated.map((b, index) => {
-      const untungUnit = b.harga_jual - b.harga_modal;
-      return `
-        <tr>
-          <td>${start + index + 1}</td>
-          <td><strong>${escapeHtml(b.nama)}</strong></td>
-          <td>${formatRupiah(b.harga_modal)}</td>
-          <td>${formatRupiah(b.harga_jual)}</td>
-          <td>${formatRupiah(untungUnit)}</td>
-          <td>
-            <button class="btn btn-light btn-sm" onclick="editBarang(${b.id})">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteBarang(${b.id})">Hapus</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
+    if (info) info.textContent = `Menampilkan ${start + 1} - ${start + paginated.length} dari ${penjualanList.length} transaksi`;
+    if (pageSpan) pageSpan.textContent = `${penjualanPageCurrent} / ${totalPages}`;
   }
 
-  document.getElementById('barangInfo').textContent = `Menampilkan ${filtered.length} barang`;
-  document.getElementById('barangPage').textContent = `${barangPage} / ${totalPages}`;
-}
-
-function renderPenjualanTable(search = '') {
-  const filtered = penjualanList.filter(p => {
-    const b = barangList.find(item => item.id == p.barang_id);
-    const nama = b ? b.nama : '';
-    return nama.toLowerCase().includes(search.toLowerCase()) || p.tanggal.includes(search);
+  // Pencarian Penjualan
+  document.getElementById("searchPenjualan")?.addEventListener("input", (e) => {
+    penjualanPageCurrent = 1;
+    loadPenjualan(e.target.value);
   });
 
-  const totalPages = Math.ceil(filtered.length / limit) || 1;
-  if (penjualanPage > totalPages) penjualanPage = totalPages;
-
-  const start = (penjualanPage - 1) * limit;
-  const paginated = filtered.slice(start, start + limit);
-
-  const tbody = document.getElementById('penjualanTable');
-  if (paginated.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Tidak ada data penjualan ditemukan</td></tr>`;
-  } else {
-    tbody.innerHTML = paginated.map((p, index) => {
-      const b = barangList.find(item => item.id == p.barang_id);
-      const nama = b ? b.nama : 'Barang Dihapus';
-      const modalSatuan = b ? b.harga_modal : 0;
-      const totalModal = modalSatuan * p.jumlah;
-      const totalOmzet = p.harga_jual_satuan * p.jumlah;
-      const keuntungan = totalOmzet - totalModal;
-
-      return `
-        <tr>
-          <td>${start + index + 1}</td>
-          <td>${formatDate(p.tanggal)}</td>
-          <td><strong>${escapeHtml(nama)}</strong></td>
-          <td>${p.jumlah}</td>
-          <td>${formatRupiah(totalModal)}</td>
-          <td>${formatRupiah(totalOmzet)}</td>
-          <td><span style="color: #16a34a; font-weight:600;">+${formatRupiah(keuntungan)}</span></td>
-          <td>
-            <button class="btn btn-light btn-sm" onclick="editPenjualan(${p.id})">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deletePenjualan(${p.id})">Hapus</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  document.getElementById('penjualanInfo').textContent = `Menampilkan ${filtered.length} transaksi`;
-  document.getElementById('penjualanPage').textContent = `${penjualanPage} / ${totalPages}`;
-}
-
-function renderKeuangan() {
-  let modalTerjual = 0;
-  let omzet = 0;
-
-  penjualanList.forEach(p => {
-    const b = barangList.find(item => item.id == p.barang_id);
-    const mSatuan = b ? b.harga_modal : 0;
-    modalTerjual += mSatuan * p.jumlah;
-    omzet += p.harga_jual_satuan * p.jumlah;
+  // Pagination Penjualan
+  document.getElementById("penjualanPrev")?.addEventListener("click", () => {
+    if (penjualanPageCurrent > 1) {
+      penjualanPageCurrent--;
+      renderPenjualanTable();
+    }
+  });
+  document.getElementById("penjualanNext")?.addEventListener("click", () => {
+    const totalPages = Math.ceil(penjualanList.length / penjualanPerPage) || 1;
+    if (penjualanPageCurrent < totalPages) {
+      penjualanPageCurrent++;
+      renderPenjualanTable();
+    }
   });
 
-  const profit = omzet - modalTerjual;
-
-  document.getElementById('financeModal').textContent = formatRupiah(modalTerjual);
-  document.getElementById('financeOmzet').textContent = formatRupiah(omzet);
-  document.getElementById('financeProfit').textContent = formatRupiah(profit);
-}
-
-function populateSelectBarang() {
-  const select = document.getElementById('pilihBarang');
-  select.innerHTML = '<option value="">Pilih barang</option>' + barangList.map(b => `
-    <option value="${b.id}">${escapeHtml(b.nama)} (Modal: ${formatRupiah(b.harga_modal)} | Jual: ${formatRupiah(b.harga_jual)})</option>
-  `).join('');
-}
-
-window.editBarang = function(id) {
-  const b = barangList.find(item => item.id == id);
-  if (!b) return;
-  document.getElementById('barangId').value = b.id;
-  document.getElementById('namaBarang').value = b.nama;
-  document.getElementById('modalBarang').value = b.harga_modal;
-  document.getElementById('jualBarang').value = b.harga_jual;
-  document.getElementById('previewUntung').textContent = formatRupiah(b.harga_jual - b.harga_modal);
-  document.getElementById('barangFormTitle').textContent = 'Edit Barang';
-  document.getElementById('barangDialog').showModal();
-};
-
-window.deleteBarang = async function(id) {
-  if (!confirm('Yakin ingin menghapus barang ini?')) return;
-  try {
-    const res = await fetch(`/api/barang?id=${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Gagal menghapus barang');
-    loadData();
-    showNotice('Barang berhasil dihapus.');
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-window.editPenjualan = function(id) {
-  const p = penjualanList.find(item => item.id == id);
-  if (!p) return;
-  document.getElementById('penjualanId').value = p.id;
-  document.getElementById('tanggalPenjualan').value = p.tanggal;
-  document.getElementById('pilihBarang').value = p.barang_id;
-  document.getElementById('jumlahPenjualan').value = p.jumlah;
-  document.getElementById('hargaJualTransaksi').value = p.harga_jual_satuan;
-
-  const b = barangList.find(item => item.id == p.barang_id);
-  const profit = b ? (p.harga_jual_satuan - b.harga_modal) * p.jumlah : 0;
-  document.getElementById('previewProfit').textContent = formatRupiah(profit);
-  document.getElementById('penjualanFormTitle').textContent = 'Edit Penjualan';
-  document.getElementById('penjualanDialog').showModal();
-};
-
-window.deletePenjualan = async function(id) {
-  if (!confirm('Yakin ingin menghapus catatan penjualan ini?')) return;
-  try {
-    const res = await fetch(`/api/penjualan?id=${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Gagal menghapus penjualan');
-    loadData();
-    showNotice('Penjualan berhasil dihapus.');
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-function downloadCSV(type, data) {
-  let csvContent = "data:text/csv;charset=utf-8,";
-  if (type === 'barang') {
-    csvContent += "No,Nama Barang,Harga Modal,Harga Jual,Untung Per Unit\r\n";
-    data.forEach((b, i) => {
-      csvContent += `${i + 1},"${b.nama}",${b.harga_modal},${b.harga_jual},${b.harga_jual - b.harga_modal}\r\n`;
-    });
-  } else if (type === 'penjualan') {
-    csvContent += "No,Tanggal,Nama Barang,Jumlah,Total Modal,Total Penjualan,Keuntungan\r\n";
-    data.forEach((p, i) => {
-      const b = barangList.find(item => item.id == p.barang_id);
-      const nama = b ? b.nama : 'Barang Dihapus';
-      const m = (b ? b.harga_modal : 0) * p.jumlah;
-      const o = p.harga_jual_satuan * p.jumlah;
-      csvContent += `${i + 1},${p.tanggal},"${nama}",${p.jumlah},${m},${o},${o - m}\r\n`;
-    });
-  } else if (type === 'keuangan') {
-    csvContent += "Laporan Keuangan Dropship\r\n";
-    let m = 0, o = 0;
-    data.forEach(p => {
-      const b = barangList.find(item => item.id == p.barang_id);
-      m += (b ? b.harga_modal : 0) * p.jumlah;
-      o += p.harga_jual_satuan * p.jumlah;
-    });
-    csvContent += `Total Modal Barang Terjual,${m}\r\n`;
-    csvContent += `Omzet Penjualan,${o}\r\n`;
-    csvContent += `Keuntungan Kotor,${o - m}\r\n`;
+  // Populate dropdown barang di form penjualan
+  function populateBarangDropdown() {
+    const select = document.getElementById("pilihBarang");
+    if (!select) return;
+    select.innerHTML = '<option value="">Pilih barang</option>' + barangList.map(b => `
+      <option value="${b.id}" data-harga="${b.harga_jual}">${b.nama} (Jual: ${formatRupiah(b.harga_jual)})</option>
+    `).join("");
   }
 
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href
+  const penjualanDialog = document.getElementById("penjualanDialog");
+  const penjualanForm = document.getElementById("penjualanForm");
+
+  document.getElementById("addPenjualan")?.addEventListener("click", () => {
+    penjualanForm.reset();
+    document.getElementById("penjualanId").value = "";
+    document.getElementById("penjualanFormTitle").textContent = "Catat Penjualan";
+    document.getElementById("tanggalPenjualan").value = new Date().toISOString().split('T')[0];
+    document.getElementById("previewProfit").textContent = "Rp0";
+    penjualanDialog?.showModal();
+  });
+
+  // Event saat barang dipilih di form penjualan (otomatis set harga jual)
+  const pilihBarangSelect = document.getElementById("pilihBarang");
+  const jumlahJualInput = document.getElementById("jumlahPenjualan");
+  const hargaJualTransaksiInput = document.getElementById("hargaJualTransaksi");
+
+  pilihBarangSelect?.addEventListener("change", () => {
+    const selectedOption = pilihBarangSelect.selectedOptions[0];
+    const hargaJual = selectedOption?.getAttribute("data-harga") || 0;
+    if (hargaJualTransaksiInput) hargaJualTransaksiInput.value = hargaJual;
+    updatePenjualanPreview();
+  });
+
+  function updatePenjualanPreview() {
+    const barangId = pilihBarangSelect?.value;
+    const jml = Number(jumlahJualInput?.value) || 0;
+    const hrgJual = Number(hargaJualTransaksiInput?.value) || 0;
+    
+    const barangObj = barangList.find(b => b.id == barangId);
+    const hrgModal = barangObj ? Number(barangObj.harga_modal) : 0;
+
+    const totalModal = hrgModal * jml;
+    const totalJual = hrgJual * jml;
+    const profit = totalJual - totalModal;
+
+    const preview = document.getElementById("previewProfit");
+    if (preview) preview.textContent = formatRupiah(profit);
+  }
+
+  jumlahJualInput?.addEventListener("input", updatePenjualanPreview);
+  hargaJualTransaksiInput?.addEventListener("input", updatePenjualanPreview);
+
+  penjualanForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("penjualanId").value;
+    const tanggal = document.getElementById("tanggalPenjualan").value;
+    const barang_id = pilihBarangSelect.value;
+    const jumlah = jumlahJualInput.value;
+    const harga_jual = hargaJualTransaksiInput.value;
+
+    const method = id ? "PUT" : "POST";
+    const payload = id ? { id, tanggal, barang_id, jumlah, harga_jual } : { tanggal, barang_id, jumlah, harga_jual };
+
+    try {
+      const res = await fetch("/api/penjualan", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan penjualan");
+
+      showNotice(data.message);
+      penjualanDialog?.close();
+      loadPenjualan();
+    } catch (err) {
+      showNotice(err.message, true);
+    }
+  });
+
+  window.editPenjualan = (id) => {
+    const item = penjualanList.find(p => p.id === id);
+    if (!item) return;
+    document.getElementById("penjualanId").value = item.id;
+    document.getElementById("tanggalPenjualan").value = item.tanggal;
+    document.getElementById("pilihBarang").value = item.barang_id;
+    document.getElementById("jumlahPenjualan").value = item.jumlah;
+    document.getElementById("hargaJualTransaksi").value = item.harga_jual;
+    document.getElementById("penjualanFormTitle").textContent = "Edit Penjualan";
+    updatePenjualanPreview();
+    penjualanDialog?.showModal();
+  };
+
+  window.deletePenjualan = async (id) => {
+    if (!confirm("Yakin ingin menghapus catatan penjualan ini?")) return;
+    try {
+      const res = await fetch("/api/penjualan", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menghapus");
+      showNotice(data.message);
+      loadPenjualan();
+    } catch (err) {
+      showNotice(err.message, true);
+    }
+  };
+
+
+  // ==========================================
+  // 3. DASHBOARD & KEUANGAN
+  // ==========================================
+  async function loadDashboard() {
+    await loadBarang();
+    await loadPenjualan();
+  }
+
+  function loadDashboardStats() {
+    let totalModal = 0;
+    let totalPenjualan = 0;
+    let totalUntung = 0;
+
+    penjualanList.forEach(p => {
+      totalModal += Number(p.total_modal || 0);
+      totalPenjualan += Number(p.total_penjualan || 0);
+      totalUntung += Number(p.keuntungan || 0);
+    });
+
+    // Update Dashboard Cards
+    document.getElementById("statModal").textContent = formatRupiah(totalModal);
+    document.getElementById("statPenjualan").textContent = formatRupiah(totalPenjualan);
+    document.getElementById("statUntung").textContent = formatRupiah(totalUntung);
+    document.getElementById("statBarang").textContent = barangList.length;
+
+    // Render Recent Sales (5 transaksi terbaru)
+    const recentSalesEl = document.getElementById("recentSales");
+    if (recentSalesEl) {
+      if (penjualanList.length === 0) {
+        recentSalesEl.innerHTML = `<tr><td colspan="5" class="empty-state">Belum ada transaksi terbaru.</td></tr>`;
+      } else {
+        recentSalesEl.innerHTML = penjualanList.slice(0, 5).map(item => `
+          <tr>
+            <td>${item.tanggal}</td>
+            <td><strong>${escapeHtml(item.nama_barang || "Barang Dihapus")}</strong> (${item.jumlah}x)</td>
+            <td>${item.jumlah}</td>
+            <td>${formatRupiah(item.total_penjualan)}</td>
+            <td style="color: #10b981; font-weight: 600;">${formatRupiah(item.keuntungan)}</td>
+          </tr>
+        `).join("");
+      }
+    }
+  }
+
+  function loadKeuangan() {
+    let totalModal = 0;
+    let totalOmzet = 0;
+    let totalProfit = 0;
+
+    penjualanList.forEach(p => {
+      totalModal += Number(p.total_modal || 0);
+      totalOmzet += Number(p.total_penjualan || 0);
+      totalProfit += Number(p.keuntungan || 0);
+    });
+
+    const fModal = document.getElementById("financeModal");
+    const fOmzet = document.getElementById("financeOmzet");
+    const fProfit = document.getElementById("financeProfit");
+
+    if (fModal) fModal.textContent = formatRupiah(totalModal);
+    if (fOmzet) fOmzet.textContent = formatRupiah(totalOmzet);
+    if (fProfit) fProfit.textContent = formatRupiah(totalProfit);
+  }
+
+  // --- TOMBOL TUTUP MODAL & DOWNLOAD CSV ---
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const dialogId = btn.getAttribute("data-close");
+      document.getElementById(dialogId)?.close();
+    });
+  });
+
+  // Download CSV Barang
+  document.getElementById("downloadBarang")?.addEventListener("click", () => {
+    exportToCSV("data-barang.csv", ["No", "Nama Barang", "Harga Modal", "Harga Jual"], barangList.map((b, i) => [i + 1, b.nama, b.harga_modal, b.harga_jual]));
+  });
+
+  // Download CSV Penjualan
+  document.getElementById("downloadPenjualan")?.addEventListener("click", () => {
+    exportToCSV("data-penjualan.csv", ["No", "Tanggal", "Nama Barang", "Jumlah", "Total Modal", "Total Penjualan", "Keuntungan"], penjualanList.map((p, i) => [i + 1, p.tanggal, p.nama_barang, p.jumlah, p.total_modal, p.total_penjualan, p.keuntungan]));
+  });
+
+  // Download Laporan Keuangan
+  document.getElementById("downloadKeuangan")?.addEventListener("click", () => {
+    let totalModal = 0, totalOmzet = 0, totalProfit = 0;
+    penjualanList.forEach(p => {
+      totalModal += Number(p.total_modal || 0);
+      totalOmzet += Number(p.total_penjualan || 0);
+      totalProfit += Number(p.keuntungan || 0);
+    });
+    exportToCSV("laporan-keuangan.csv", ["Keterangan", "Jumlah (Rp)"], [
+      ["Modal Barang Terjual", totalModal],
+      ["Omzet Penjualan", totalOmzet],
+      ["Keuntungan Kotor", totalProfit]
+    ]);
+  });
+
+  function exportToCSV(filename, headers, rows) {
+    let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // Load awal saat aplikasi dibuka
+  loadDashboard();
+});
