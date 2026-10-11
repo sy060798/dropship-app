@@ -1,144 +1,83 @@
-import db from './db.js';
+const { createClient } = require("@libsql/client");
 
-export default async function handler(req, res) {
-  // Atur header CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const db = createClient({
+  url: "https://app.turso.tech/sy060798?group=default",
+  authToken: "KODE_AUTH_TOKEN_TURSO_ANDA"
+});
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+module.exports = async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  const method = req.method;
 
   try {
-    // 1. GET: Ambil semua data penjualan beserta detail barangnya (bergabung dengan tabel barang)
-    if (req.method === 'GET') {
-      const { search } = req.query;
-      let query = `
-        SELECT penjualan.*, barang.nama as nama_barang, barang.harga_modal 
+    if (method === 'GET') {
+      const rs = await db.execute(`
+        SELECT penjualan.*, barang.nama_barang 
         FROM penjualan 
         LEFT JOIN barang ON penjualan.barang_id = barang.id
-      `;
-      let params = [];
+        ORDER BY penjualan.id DESC
+      `);
+      return res.status(200).json(rs.rows);
+    } 
+    else if (method === 'POST') {
+      const { barang_id, jumlah, harga_satuan, pengeluaran_lain } = req.body;
+      const total_harga = jumlah * harga_satuan;
+      const p_lain = pengeluaran_lain || 0;
 
-      if (search) {
-        query += " WHERE barang.nama LIKE ?";
-        params.push(`%${search}%`);
-      }
-
-      query += " ORDER BY penjualan.tanggal DESC, penjualan.id DESC";
-
-      const result = await db.execute({ sql: query, args: params });
-      return res.status(200).json(result.rows);
-    }
-
-    // 2. POST: Catat penjualan baru
-    if (req.method === 'POST') {
-      const { tanggal, barang_id, jumlah, harga_jual } = req.body;
-
-      if (!tanggal || !barang_id || !jumlah || harga_jual === undefined) {
-        return res.status(400).json({ error: "Tanggal, barang, jumlah, dan harga jual wajib diisi!" });
-      }
-
-      // Ambil data barang untuk mendapatkan harga modal
-      const barangRes = await db.execute({
-        sql: "SELECT harga_modal FROM barang WHERE id = ?",
-        args: [Number(barang_id)]
+      // Ambil harga beli (modal dasar) barang dari katalog
+      const cekBarang = await db.execute({
+        sql: "SELECT harga_beli FROM barang WHERE id = ?",
+        args: [barang_id]
       });
 
-      if (barangRes.rows.length === 0) {
-        return res.status(404).json({ error: "Barang tidak ditemukan!" });
+      if (cekBarang.rows.length === 0) {
+        return res.status(404).json({ error: "Barang tidak ditemukan di katalog" });
       }
 
-      const harga_modal = barangRes.rows[0].harga_modal;
-      const total_modal = Number(harga_modal) * Number(jumlah);
-      const total_penjualan = Number(harga_jual) * Number(jumlah);
-      const keuntungan = total_penjualan - total_modal;
+      const hargaBeliSatuan = cekBarang.rows[0].harga_beli;
+      const totalModalBarang = hargaBeliSatuan * jumlah;
+      const keuntunganBersih = total_harga - (totalModalBarang + p_lain);
 
+      // 1. Simpan transaksi penjualan ke database
       await db.execute({
-        sql: `
-          INSERT INTO penjualan (tanggal, barang_id, jumlah, harga_jual, total_modal, total_penjualan, keuntungan) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `,
-        args: [
-          tanggal,
-          Number(barang_id),
-          Number(jumlah),
-          Number(harga_jual),
-          total_modal,
-          total_penjualan,
-          keuntungan
-        ]
+        sql: `INSERT INTO penjualan (barang_id, jumlah, harga_satuan, total_harga, total_modal, keuntungan, pengeluaran_lain) 
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [barang_id, jumlah, harga_satuan, total_harga, totalModalBarang, keuntunganBersih, p_lain]
       });
 
-      return res.status(201).json({ message: "Penjualan berhasil dicatat" });
-    }
-
-    // 3. PUT: Perbarui data penjualan berdasarkan ID
-    if (req.method === 'PUT') {
-      const { id, tanggal, barang_id, jumlah, harga_jual } = req.body;
-
-      if (!id || !tanggal || !barang_id || !jumlah || harga_jual === undefined) {
-        return res.status(400).json({ error: "ID, tanggal, barang, jumlah, dan harga jual diperlukan!" });
-      }
-
-      // Ambil harga modal terbaru dari barang
-      const barangRes = await db.execute({
-        sql: "SELECT harga_modal FROM barang WHERE id = ?",
-        args: [Number(barang_id)]
-      });
-
-      if (barangRes.rows.length === 0) {
-        return res.status(404).json({ error: "Barang tidak ditemukan!" });
-      }
-
-      const harga_modal = barangRes.rows[0].harga_modal;
-      const total_modal = Number(harga_modal) * Number(jumlah);
-      const total_penjualan = Number(harga_jual) * Number(jumlah);
-      const keuntungan = total_penjualan - total_modal;
-
+      // 2. Otomatis kurangi saldo modal toko (karena uang dipakai bayar supplier dropship)
       await db.execute({
-        sql: `
-          UPDATE penjualan 
-          SET tanggal = ?, barang_id = ?, jumlah = ?, harga_jual = ?, total_modal = ?, total_penjualan = ?, keuntungan = ? 
-          WHERE id = ?
-        `,
-        args: [
-          tanggal,
-          Number(barang_id),
-          Number(jumlah),
-          Number(harga_jual),
-          total_modal,
-          total_penjualan,
-          keuntungan,
-          Number(id)
-        ]
+        sql: "INSERT INTO modal (jumlah_modal, keterangan) VALUES (?, ?)",
+        args: [-totalModalBarang, `Belanja Dropship: (Barang ID #${barang_id} x ${jumlah} pcs)`]
       });
 
-      return res.status(200).json({ message: "Penjualan berhasil diperbarui" });
+      return res.status(201).json({ message: "Penjualan dicatat & saldo modal terpotong otomatis" });
     }
+    else if (method === 'DELETE') {
+      const { id } = req.query;
 
-    // 4. DELETE: Hapus data penjualan berdasarkan ID
-    if (req.method === 'DELETE') {
-      const id = req.body.id || req.query.id;
+      // Jika penjualan dihapus, kembalikan modal yang terpotong sebelumnya ke saldo toko
+      const getPenjualan = await db.execute({
+        sql: "SELECT total_modal FROM penjualan WHERE id = ?",
+        args: [id]
+      });
 
-      if (!id) {
-        return res.status(400).json({ error: "ID penjualan tidak ditemukan untuk dihapus!" });
+      if (getPenjualan.rows.length > 0) {
+        const modalKembali = getPenjualan.rows[0].total_modal;
+        await db.execute({
+          sql: "INSERT INTO modal (jumlah_modal, keterangan) VALUES (?, ?)",
+          args: [modalKembali, `Refund/Pembatalan Penjualan Transaksi #${id}`]
+        });
       }
 
       await db.execute({
         sql: "DELETE FROM penjualan WHERE id = ?",
-        args: [Number(id)]
+        args: [id]
       });
 
-      return res.status(200).json({ message: "Penjualan berhasil dihapus" });
+      return res.status(200).json({ message: "Penjualan dihapus & saldo modal dikembalikan" });
     }
-
-    res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
-
   } catch (error) {
-    console.error("Database Error:", error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
