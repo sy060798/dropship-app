@@ -1,8 +1,8 @@
 const { createClient } = require("@libsql/client");
 
 const db = createClient({
-  url: "https://app.turso.tech/sy060798?group=default",
-  authToken: "KODE_AUTH_TOKEN_TURSO_ANDA"
+  url: "libsql://projek-1-sy060798.aws-ap-northeast-1.turso.io",
+  authToken: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTE3MDYyMzgsImlkIjoiMDFhMTI2ZGQtZDcwMS03NmRkLWFjMmQtMDM0MmRhYjk1ZDU5Iiwia2lkIjoiTW9HX2plcnRabXRLY3FZTFlNdmRubm8tNnEyMzFudlZuZ1J2T0ZtM0pfdyIsInJpZCI6Ijk2Mzg2YmI4LTA4NTUtNDk0Ny04YjNhLWUzMDc0N2FjOWMzMiJ9.JIqJjSglywJwTSAiG0XGr0_TwzZi0lnpNRiv9artMqPf-pJ64VQgGjAnaDquykIRnYCD_GAIkzl6Cw_zEa4ICw"
 });
 
 module.exports = async (req, res) => {
