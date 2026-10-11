@@ -1,378 +1,330 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f766e">
-  <meta name="description" content="Catatan Dropship - Kelola barang, penjualan, modal, dan keuntungan.">
-  <title>Catatan Dropship</title>
-
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Dropship</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="brand-icon">D</div>
-        <div>
-          <strong>Catatan Dropship</strong>
-          <small>Manajemen usaha</small>
-        </div>
-      </div>
+    <header>
+        <h2>Aplikasi Manajemen Dropship</h2>
+    </header>
+    
+    <nav>
+        <button onclick="switchTab('dasbor')" class="active" id="nav-dasbor">Dasbor</button>
+        <button onclick="switchTab('barang')" id="nav-barang">Data Barang</button>
+        <button onclick="switchTab('penjualan')" id="nav-penjualan">Data Penjualan</button>
+    </nav>
 
-      <nav class="navigation" aria-label="Menu utama">
-        <button class="nav-link active" data-page="dashboard" type="button">
-          <span>▦</span> Dashboard
-        </button>
-        <button class="nav-link" data-page="barang" type="button">
-          <span>□</span> Data Barang
-        </button>
-        <button class="nav-link" data-page="penjualan" type="button">
-          <span>▤</span> Data Penjualan
-        </button>
-        <button class="nav-link" data-page="keuangan" type="button">
-          <span>◎</span> Modal & Keuntungan
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <span class="status-dot"></span>
-        Catatan usaha dropship
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <button
-          type="button"
-          class="menu-toggle"
-          id="menuToggle"
-          aria-label="Buka menu"
-          aria-expanded="false"
-        >☰</button>
-
-        <div>
-          <h1 id="pageTitle">Dashboard</h1>
-          <p id="todayDate">Ringkasan usaha dropship kamu</p>
-        </div>
-
-        <div class="topbar-label">TOKO SAYA</div>
-      </header>
-
-      <div id="notice" class="notice" role="status" hidden></div>
-
-      <!-- DASHBOARD -->
-      <section class="page active" id="page-dashboard">
-        <div class="welcome">
-          <div>
-            <h2>Halo, Dropshipper! 👋</h2>
-            <p>Pantau barang, penjualan, modal, dan keuntunganmu.</p>
-          </div>
-          <button class="btn btn-primary" type="button" data-go="penjualan">
-            + Catat Penjualan
-          </button>
-        </div>
-
-        <div class="stats-grid">
-          <article class="stat-card">
-            <div class="stat-icon teal">Rp</div>
-            <div class="stat-label">Total Modal Barang Terjual</div>
-            <div class="stat-value" id="statModal">Rp0</div>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-icon blue">↗</div>
-            <div class="stat-label">Total Penjualan</div>
-            <div class="stat-value" id="statPenjualan">Rp0</div>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-icon green">+</div>
-            <div class="stat-label">Keuntungan Bersih</div>
-            <div class="stat-value" id="statUntung">Rp0</div>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-icon orange">□</div>
-            <div class="stat-label">Jumlah Jenis Barang</div>
-            <div class="stat-value" id="statBarang">0</div>
-          </article>
-        </div>
-
-        <div class="content-card">
-          <div class="card-heading">
-            <div>
-              <h3>Penjualan Terbaru</h3>
-              <p>Transaksi yang terakhir dicatat.</p>
+    <div class="container">
+        <!-- DASBOR -->
+        <div id="tab-dasbor" class="tab-content">
+            <h3>Ringkasan Keuangan & Kinerja</h3>
+            <div class="card-container">
+                <div class="card">
+                    <h4>Total Pendapatan</h4>
+                    <p id="tot-pendapatan">Rp 0</p>
+                </div>
+                <div class="card">
+                    <h4>Total Pengeluaran</h4>
+                    <p id="tot-pengeluaran">Rp 0</p>
+                </div>
+                <div class="card">
+                    <h4>Keuntungan Bersih</h4>
+                    <p id="tot-keuntungan" style="color: #27ae60; font-weight: bold;">Rp 0</p>
+                </div>
             </div>
-            <button class="btn btn-light" type="button" data-go="penjualan">
-              Lihat Semua
-            </button>
-          </div>
+        </div>
 
-          <div class="table-wrap">
+        <!-- DATA BARANG -->
+        <div id="tab-barang" class="tab-content" style="display:none;">
+            <h3>Data Barang</h3>
+            <button class="btn-success" onclick="openModal()">Tambah Produk</button>
             <table>
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Nama Barang</th>
-                  <th>Jumlah</th>
-                  <th>Total Penjualan</th>
-                  <th>Keuntungan</th>
-                </tr>
-              </thead>
-              <tbody id="recentSales">
-                <tr>
-                  <td colspan="5" class="empty-state">
-                    Memuat data penjualan...
-                  </td>
-                </tr>
-              </tbody>
+                <thead>
+                    <tr>
+                        <th>Nama Barang</th>
+                        <th>Harga Beli</th>
+                        <th>Harga Jual</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="list-barang">
+                    <!-- Data barang akan dimuat di sini -->
+                </tbody>
             </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- DATA BARANG -->
-      <section class="page" id="page-barang">
-        <div class="section-heading">
-          <div>
-            <h2>Data Barang</h2>
-            <p>Kelola nama barang, modal, dan harga jual.</p>
-          </div>
-          <button class="btn btn-primary" id="addBarang" type="button">
-            + Tambah Barang
-          </button>
         </div>
 
-        <div class="toolbar">
-          <input
-            type="search"
-            id="searchBarang"
-            placeholder="Cari nama barang..."
-            aria-label="Cari nama barang"
-          >
-          <button class="btn btn-light" id="downloadBarang" type="button">
-            ↓ Download CSV
-          </button>
-        </div>
-
-        <div class="content-card">
-          <div class="table-wrap">
+        <!-- DATA PENJUALAN -->
+        <div id="tab-penjualan" class="tab-content" style="display:none;">
+            <h3>Data Penjualan & Pengeluaran</h3>
+            <button class="btn-success" onclick="openPenjualanModal()">Catat Penjualan</button>
             <table>
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Nama Barang</th>
-                  <th>Harga Modal</th>
-                  <th>Harga Jual</th>
-                  <th>Untung / Unit</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="barangTable">
-                <tr>
-                  <td colspan="6" class="empty-state">
-                    Memuat data barang...
-                  </td>
-                </tr>
-              </tbody>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Barang</th>
+                        <th>Jumlah</th>
+                        <th>Total Harga</th>
+                        <th>Pengeluaran Lain</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="list-penjualan">
+                    <!-- Data penjualan akan dimuat di sini -->
+                </tbody>
             </table>
-          </div>
-
-          <div class="pagination">
-            <span id="barangInfo">Menampilkan 0 barang</span>
-            <div class="pagination-actions">
-              <button class="btn btn-light" id="barangPrev" type="button">
-                ← Sebelumnya
-              </button>
-              <span id="barangPage">1 / 1</span>
-              <button class="btn btn-light" id="barangNext" type="button">
-                Berikutnya →
-              </button>
-            </div>
-          </div>
         </div>
+    </div>
 
-        <p class="helper-text">
-          Maksimal 10 barang ditampilkan per halaman. Data berikutnya ada di
-          halaman selanjutnya.
-        </p>
-      </section>
-
-      <!-- DATA PENJUALAN -->
-      <section class="page" id="page-penjualan">
-        <div class="section-heading">
-          <div>
-            <h2>Data Penjualan</h2>
-            <p>Catat transaksi dan lihat keuntungan setiap penjualan.</p>
-          </div>
-          <button class="btn btn-primary" id="addPenjualan" type="button">
-            + Catat Penjualan
-          </button>
+    <!-- MODAL PRODUK (TAMBAH / EDIT) -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Tambah Produk</h3>
+            <form id="productForm">
+                <input type="hidden" id="prod-id">
+                <div class="form-group">
+                    <label>Nama Barang</label>
+                    <input type="text" id="nama_barang" required>
+                </div>
+                <div class="form-group">
+                    <label>Harga Beli</label>
+                    <input type="number" id="harga_beli" required>
+                </div>
+                <div class="form-group">
+                    <label>Harga Jual</label>
+                    <input type="number" id="harga_jual" required>
+                </div>
+                <div class="form-group">
+                    <label>Stok</label>
+                    <input type="number" id="stok" required>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="btn-primary" style="flex:1;">Simpan</button>
+                    <button type="button" class="btn-danger" style="flex:1;" onclick="closeModal()">Batal</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="toolbar">
-          <input
-            type="search"
-            id="searchPenjualan"
-            placeholder="Cari nama barang..."
-            aria-label="Cari transaksi"
-          >
-          <button class="btn btn-light" id="downloadPenjualan" type="button">
-            ↓ Download CSV
-          </button>
+    <!-- MODAL PENJUALAN -->
+    <div id="penjualanModal" class="modal">
+        <div class="modal-content">
+            <h3>Catat Penjualan Baru</h3>
+            <form id="penjualanForm">
+                <div class="form-group">
+                    <label>Pilih Barang</label>
+                    <select id="select-barang" required style="width:100%; padding:8px; box-sizing:border-box;"></select>
+                </div>
+                <div class="form-group">
+                    <label>Jumlah Terjual</label>
+                    <input type="number" id="jml_jual" required>
+                </div>
+                <div class="form-group">
+                    <label>Harga Satuan Jual</label>
+                    <input type="number" id="satuan_jual" required>
+                </div>
+                <div class="form-group">
+                    <label>Pengeluaran Lain (Opsional/Ongkir, dll)</label>
+                    <input type="number" id="pengeluaran_lain" value="0">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="btn-primary" style="flex:1;">Simpan Penjualan</button>
+                    <button type="button" class="btn-danger" style="flex:1;" onclick="closePenjualanModal()">Batal</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="content-card">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Tanggal</th>
-                  <th>Nama Barang</th>
-                  <th>Jumlah</th>
-                  <th>Total Modal</th>
-                  <th>Total Penjualan</th>
-                  <th>Keuntungan</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="penjualanTable">
-                <tr>
-                  <td colspan="8" class="empty-state">
-                    Memuat data penjualan...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).style.display = 'block';
+            document.getElementById('nav-' + tab).classList.add('active');
+            
+            if(tab === 'dasbor') loadDasbor();
+            if(tab === 'barang') loadBarang();
+            if(tab === 'penjualan') loadPenjualan();
+        }
 
-          <div class="pagination">
-            <span id="penjualanInfo">Menampilkan 0 transaksi</span>
-            <div class="pagination-actions">
-              <button class="btn btn-light" id="penjualanPrev" type="button">
-                ← Sebelumnya
-              </button>
-              <span id="penjualanPage">1 / 1</span>
-              <button class="btn btn-light" id="penjualanNext" type="button">
-                Berikutnya →
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+        async function loadBarang() {
+            try {
+                const res = await fetch('/api/barang');
+                const data = await res.json();
+                let html = '';
+                let selectHtml = '<option value="">-- Pilih Barang --</option>';
+                
+                data.forEach(item => {
+                    html += `<tr>
+                        <td>${item.nama_barang}</td>
+                        <td>Rp ${Number(item.harga_beli).toLocaleString('id-ID')}</td>
+                        <td>Rp ${Number(item.harga_jual).toLocaleString('id-ID')}</td>
+                        <td>${item.stok}</td>
+                        <td>
+                            <button class="btn-primary" onclick='editBarang(${JSON.stringify(item)})'>Edit</button>
+                            <button class="btn-danger" onclick="hapusBarang(${item.id})">Hapus</button>
+                        </td>
+                    </tr>`;
+                    selectHtml += `<option value="${item.id}" data-jual="${item.harga_jual}">${item.nama_barang} (Stok: ${item.stok})</option>`;
+                });
+                
+                document.getElementById('list-barang').innerHTML = html;
+                const selectEl = document.getElementById('select-barang');
+                if(selectEl) selectEl.innerHTML = selectHtml;
+            } catch (err) {
+                console.error("Gagal memuat data barang", err);
+            }
+        }
 
-      <!-- KEUANGAN -->
-      <section class="page" id="page-keuangan">
-        <div class="section-heading">
-          <div>
-            <h2>Modal & Keuntungan</h2>
-            <p>Ringkasan hasil penjualan dan modal barang yang terjual.</p>
-          </div>
-          <button class="btn btn-light" id="downloadKeuangan" type="button">
-            ↓ Download Laporan
-          </button>
-        </div>
+        async function loadPenjualan() {
+            try {
+                const res = await fetch('/api/penjualan');
+                const data = await res.json();
+                let html = '';
+                data.forEach(item => {
+                    html += `<tr>
+                        <td>${item.tanggal || '-'}</td>
+                        <td>${item.nama_barang || 'Barang Dihapus'}</td>
+                        <td>${item.jumlah}</td>
+                        <td>Rp ${Number(item.total_harga).toLocaleString('id-ID')}</td>
+                        <td>Rp ${Number(item.pengeluaran_lain || 0).toLocaleString('id-ID')}</td>
+                        <td><button class="btn-danger" onclick="hapusPenjualan(${item.id})">Hapus</button></td>
+                    </tr>`;
+                });
+                document.getElementById('list-penjualan').innerHTML = html;
+            } catch (err) {
+                console.error("Gagal memuat data penjualan", err);
+            }
+        }
 
-        <div class="stats-grid">
-          <article class="stat-card">
-            <div class="stat-label">Modal Barang Terjual</div>
-            <div class="stat-value" id="financeModal">Rp0</div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-label">Omzet Penjualan</div>
-            <div class="stat-value" id="financeOmzet">Rp0</div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-label">Keuntungan Kotor</div>
-            <div class="stat-value" id="financeProfit">Rp0</div>
-          </article>
-        </div>
+        async function loadDasbor() {
+            try {
+                const [resP, resB] = await Promise.all([
+                    fetch('/api/penjualan'),
+                    fetch('/api/barang')
+                ]);
+                const penjualan = await resP.json();
+                const barang = await resB.json();
 
-        <div class="content-card finance-note">
-          <h3>Cara menghitung keuntungan</h3>
-          <p>Modal barang terjual = harga modal × jumlah terjual.</p>
-          <p>Keuntungan kotor = total penjualan − modal barang terjual.</p>
-          <p>Angka ini belum dikurangi ongkir yang ditanggung penjual, biaya admin, iklan, atau pengeluaran lain.</p>
-        </div>
-      </section>
+                let totalPendapatan = 0;
+                let totalPengeluaranLain = 0;
+                let totalHPP = 0;
 
-      <footer class="footer">
-        Catatan Dropship · Data mengikuti transaksi yang tersimpan.
-      </footer>
-    </main>
-  </div>
+                penjualan.forEach(p => {
+                    totalPendapatan += Number(p.total_harga || 0);
+                    totalPengeluaranLain += Number(p.pengeluaran_lain || 0);
+                    const b = barang.find(x => x.id === p.barang_id);
+                    if(b) {
+                        totalHPP += (Number(b.harga_beli) * Number(p.jumlah));
+                    }
+                });
 
-  <!-- FORM TAMBAH / EDIT BARANG -->
-  <dialog id="barangDialog" class="modal">
-    <form id="barangForm">
-      <div class="modal-header">
-        <h2 id="barangFormTitle">Tambah Barang</h2>
-        <button class="close-btn" type="button" data-close="barangDialog" aria-label="Tutup">×</button>
-      </div>
+                let totalPengeluaran = totalHPP + totalPengeluaranLain;
+                let keuntunganBersih = totalPendapatan - totalPengeluaran;
 
-      <input type="hidden" id="barangId">
+                document.getElementById('tot-pendapatan').innerText = 'Rp ' + totalPendapatan.toLocaleString('id-ID');
+                document.getElementById('tot-pengeluaran').innerText = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
+                document.getElementById('tot-keuntungan').innerText = 'Rp ' + keuntunganBersih.toLocaleString('id-ID');
+            } catch (err) {
+                console.error("Gagal memuat dasbor", err);
+            }
+        }
 
-      <label for="namaBarang">Nama Barang</label>
-      <input id="namaBarang" name="nama" maxlength="150" required placeholder="Contoh: Kaos Polos">
+        function openModal() {
+            document.getElementById('productForm').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('modal-title').innerText = 'Tambah Produk';
+            document.getElementById('productModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('productModal').style.display = 'none'; }
 
-      <label for="modalBarang">Harga Modal (Rp)</label>
-      <input id="modalBarang" name="harga_modal" type="number" min="0" step="1" required placeholder="25000">
+        function openPenjualanModal() {
+            loadBarang();
+            document.getElementById('penjualanForm').reset();
+            document.getElementById('penjualanModal').style.display = 'flex';
+        }
+        function closePenjualanModal() { document.getElementById('penjualanModal').style.display = 'none'; }
 
-      <label for="jualBarang">Harga Jual (Rp)</label>
-      <input id="jualBarang" name="harga_jual" type="number" min="0" step="1" required placeholder="40000">
+        function editBarang(item) {
+            document.getElementById('prod-id').value = item.id;
+            document.getElementById('nama_barang').value = item.nama_barang;
+            document.getElementById('harga_beli').value = item.harga_beli;
+            document.getElementById('harga_jual').value = item.harga_jual;
+            document.getElementById('stok').value = item.stok;
+            document.getElementById('modal-title').innerText = 'Edit Produk';
+            document.getElementById('productModal').style.display = 'flex';
+        }
 
-      <div class="form-preview">
-        Keuntungan per unit:
-        <strong id="previewUntung">Rp0</strong>
-      </div>
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const payload = {
+                nama_barang: document.getElementById('nama_barang').value,
+                harga_beli: parseFloat(document.getElementById('harga_beli').value),
+                harga_jual: parseFloat(document.getElementById('harga_jual').value),
+                stok: parseInt(document.getElementById('stok').value)
+            };
+            
+            let method = 'POST';
+            if(id) {
+                method = 'PUT';
+                payload.id = parseInt(id);
+            }
 
-      <div class="modal-actions">
-        <button class="btn btn-light" type="button" data-close="barangDialog">Batal</button>
-        <button class="btn btn-primary" type="submit" id="saveBarang">Simpan Barang</button>
-      </div>
-    </form>
-  </dialog>
+            await fetch('/api/barang', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            closeModal();
+            loadBarang();
+        });
 
-  <!-- FORM TAMBAH / EDIT PENJUALAN -->
-  <dialog id="penjualanDialog" class="modal">
-    <form id="penjualanForm">
-      <div class="modal-header">
-        <h2 id="penjualanFormTitle">Catat Penjualan</h2>
-        <button class="close-btn" type="button" data-close="penjualanDialog" aria-label="Tutup">×</button>
-      </div>
+        async function hapusBarang(id) {
+            if(confirm('Yakin ingin menghapus barang ini?')) {
+                await fetch('/api/barang?id=' + id, { method: 'DELETE' });
+                loadBarang();
+            }
+        }
 
-      <input type="hidden" id="penjualanId">
+        document.getElementById('penjualanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                barang_id: parseInt(document.getElementById('select-barang').value),
+                jumlah: parseInt(document.getElementById('jml_jual').value),
+                harga_satuan: parseFloat(document.getElementById('satuan_jual').value),
+                pengeluaran_lain: parseFloat(document.getElementById('pengeluaran_lain').value) || 0
+            };
+            await fetch('/api/penjualan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            closePenjualanModal();
+            loadPenjualan();
+        });
 
-      <label for="tanggalPenjualan">Tanggal</label>
-      <input id="tanggalPenjualan" type="date" required>
+        async function hapusPenjualan(id) {
+            if(confirm('Yakin ingin menghapus catatan penjualan ini?')) {
+                await fetch('/api/penjualan?id=' + id, { method: 'DELETE' });
+                loadPenjualan();
+            }
+        }
 
-      <label for="pilihBarang">Barang</label>
-      <select id="pilihBarang" required>
-        <option value="">Pilih barang</option>
-      </select>
+        // Auto isi harga satuan otomatis saat barang dipilih di form penjualan
+        document.getElementById('select-barang').addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            const hargaJual = selectedOpt.getAttribute('data-jual');
+            if(hargaJual) {
+                document.getElementById('satuan_jual').value = hargaJual;
+            }
+        });
 
-      <label for="jumlahPenjualan">Jumlah Terjual</label>
-      <input id="jumlahPenjualan" type="number" min="1" step="1" value="1" required>
-
-      <label for="hargaJualTransaksi">Harga Jual per Unit (Rp)</label>
-      <input id="hargaJualTransaksi" type="number" min="0" step="1" required>
-
-      <div class="form-preview">
-        Perkiraan keuntungan:
-        <strong id="previewProfit">Rp0</strong>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-light" type="button" data-close="penjualanDialog">Batal</button>
-        <button class="btn btn-primary" type="submit" id="savePenjualan">Simpan Penjualan</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Pemanggilan JavaScript Utama di Root Folder -->
-  <script src="app.js" defer></script>
+        // Muat data dasbor pertama kali saat halaman dibuka
+        loadDasbor();
+    </script>
 </body>
 </html>
