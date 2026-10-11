@@ -1,8 +1,9 @@
 {
   "name": "dropship-app",
   "version": "1.0.0",
-  "description": "Aplikasi Dropship dengan Turso DB dan Vercel",
   "dependencies": {
-    "@libsql/client": "^0.6.0"
+    "@libsql/client": "^0.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   }
 }
