@@ -1,6 +1,9 @@
 {
   "version": 2,
   "routes": [
+    { "src": "/api/barang", "dest": "/api/barang.js" },
+    { "src": "/api/modal", "dest": "/api/modal.js" },
+    { "src": "/api/penjualan", "dest": "/api/penjualan.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
