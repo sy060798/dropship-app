@@ -1,87 +1,44 @@
-import db from './db.js';
+const { createClient } = require("@libsql/client");
 
-export default async function handler(req, res) {
-  // Atur header agar mendukung CORS jika diperlukan
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const db = createClient({
+  url: "https://app.turso.tech/sy060798?group=default",
+  authToken: "KODE_AUTH_TOKEN_TURSO_ANDA" // Ganti dengan token Turso Anda
+});
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+module.exports = async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  const method = req.method;
 
   try {
-    // 1. GET: Ambil semua data barang (mendukung pencarian query ?search=...)
-    if (req.method === 'GET') {
-      const { search } = req.query;
-      let query = "SELECT * FROM barang";
-      let params = [];
-
-      if (search) {
-        query += " WHERE nama LIKE ?";
-        params.push(`%${search}%`);
-      }
-
-      query += " ORDER BY id DESC";
-      
-      const result = await db.execute({ sql: query, args: params });
-      return res.status(200).json(result.rows);
-    }
-
-    // 2. POST: Tambah barang baru
-    if (req.method === 'POST') {
-      const { nama, harga_modal, harga_jual } = req.body;
-
-      if (!nama || harga_modal === undefined || harga_jual === undefined) {
-        return res.status(400).json({ error: "Nama, harga modal, dan harga jual wajib diisi!" });
-      }
-
+    if (method === 'GET') {
+      const rs = await db.execute("SELECT * FROM barang ORDER BY id DESC");
+      return res.status(200).json(rs.rows);
+    } 
+    else if (method === 'POST') {
+      const { sku, nama_barang, harga_beli, margin, harga_jual, stok } = req.body;
       await db.execute({
-        sql: "INSERT INTO barang (nama, harga_modal, harga_jual) VALUES (?, ?, ?)",
-        args: [nama, Number(harga_modal), Number(harga_jual)]
+        sql: "INSERT INTO barang (sku, nama_barang, harga_beli, margin, harga_jual, stok) VALUES (?, ?, ?, ?, ?, ?)",
+        args: [sku, nama_barang, harga_beli, margin, harga_jual, stok]
       });
-
       return res.status(201).json({ message: "Barang berhasil ditambahkan" });
     }
-
-    // 3. PUT: Edit / Perbarui data barang berdasarkan ID
-    if (req.method === 'PUT') {
-      const { id, nama, harga_modal, harga_jual } = req.body;
-
-      if (!id || !nama || harga_modal === undefined || harga_jual === undefined) {
-        return res.status(400).json({ error: "ID, nama, harga modal, dan harga jual diperlukan!" });
-      }
-
+    else if (method === 'PUT') {
+      const { id, sku, nama_barang, harga_beli, margin, harga_jual, stok } = req.body;
       await db.execute({
-        sql: "UPDATE barang SET nama = ?, harga_modal = ?, harga_jual = ? WHERE id = ?",
-        args: [nama, Number(harga_modal), Number(harga_jual), Number(id)]
+        sql: "UPDATE barang SET sku = ?, nama_barang = ?, harga_beli = ?, margin = ?, harga_jual = ?, stok = ? WHERE id = ?",
+        args: [sku, nama_barang, harga_beli, margin, harga_jual, stok, id]
       });
-
-      return res.status(200).json({ message: "Barang berhasil diperbarui" });
+      return res.status(200).json({ message: "Barang berhasil diubah" });
     }
-
-    // 4. DELETE: Hapus data barang berdasarkan ID (bisa via body atau query parameter ?id=...)
-    if (req.method === 'DELETE') {
-      const id = req.body.id || req.query.id;
-
-      if (!id) {
-        return res.status(400).json({ error: "ID barang tidak ditemukan untuk dihapus!" });
-      }
-
+    else if (method === 'DELETE') {
+      const { id } = req.query;
       await db.execute({
         sql: "DELETE FROM barang WHERE id = ?",
-        args: [Number(id)]
+        args: [id]
       });
-
       return res.status(200).json({ message: "Barang berhasil dihapus" });
     }
-
-    // Jika method selain di atas
-    res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
-
   } catch (error) {
-    console.error("Database Error:", error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
