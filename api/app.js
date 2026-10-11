@@ -15,22 +15,23 @@ const db = createClient({
 app.get('/api/barang', async (req, res) => {
   try {
     const rs = await db.execute("SELECT * FROM barang ORDER BY id DESC");
-    res.json(rs.rows);
+    return res.status(200).json(rs.rows || []);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error /api/barang:", err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
 
 app.post('/api/barang', async (req, res) => {
   try {
-    const { sku, nama_barang, harga_beli, margin, harga_jual } = req.body;
+    const { sku, nama_barang, harga_beli, margin, harga_jual } = req.body || {};
     await db.execute({
       sql: "INSERT INTO barang (sku, nama_barang, harga_beli, margin, harga_jual) VALUES (?, ?, ?, ?, ?)",
       args: [sku, nama_barang, harga_beli, margin, harga_jual]
     });
-    res.status(201).json({ message: "Barang berhasil ditambahkan" });
+    return res.status(201).json({ message: "Barang berhasil ditambahkan" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -38,9 +39,9 @@ app.delete('/api/barang', async (req, res) => {
   try {
     const { id } = req.query;
     await db.execute({ sql: "DELETE FROM barang WHERE id = ?", args: [id] });
-    res.json({ message: "Barang berhasil dihapus" });
+    return res.status(200).json({ message: "Barang berhasil dihapus" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -48,22 +49,23 @@ app.delete('/api/barang', async (req, res) => {
 app.get('/api/modal', async (req, res) => {
   try {
     const rs = await db.execute("SELECT * FROM modal ORDER BY id DESC");
-    res.json(rs.rows);
+    return res.status(200).json(rs.rows || []);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error /api/modal:", err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
 
 app.post('/api/modal', async (req, res) => {
   try {
-    const { jumlah_modal, keterangan } = req.body;
+    const { jumlah_modal, keterangan } = req.body || {};
     await db.execute({
       sql: "INSERT INTO modal (jumlah_modal, keterangan) VALUES (?, ?)",
       args: [jumlah_modal, keterangan || 'Setoran Saldo Modal']
     });
-    res.status(201).json({ message: "Modal berhasil ditambahkan" });
+    return res.status(201).json({ message: "Modal berhasil ditambahkan" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -71,9 +73,9 @@ app.delete('/api/modal', async (req, res) => {
   try {
     const { id } = req.query;
     await db.execute({ sql: "DELETE FROM modal WHERE id = ?", args: [id] });
-    res.json({ message: "Catatan modal dihapus" });
+    return res.status(200).json({ message: "Catatan modal dihapus" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -86,15 +88,15 @@ app.get('/api/penjualan', async (req, res) => {
       LEFT JOIN barang ON penjualan.barang_id = barang.id
       ORDER BY penjualan.id DESC
     `);
-    res.json(rs.rows);
+    return res.status(200).json(rs.rows || []);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
 app.post('/api/penjualan', async (req, res) => {
   try {
-    const { barang_id, jumlah, harga_satuan, pengeluaran_lain } = req.body;
+    const { barang_id, jumlah, harga_satuan, pengeluaran_lain } = req.body || {};
     const total_harga = jumlah * harga_satuan;
     const p_lain = pengeluaran_lain || 0;
 
@@ -121,9 +123,9 @@ app.post('/api/penjualan', async (req, res) => {
       args: [-totalModalBarang, `Belanja Dropship (Barang ID #${barang_id})`]
     });
 
-    res.status(201).json({ message: "Penjualan berhasil dicatat" });
+    return res.status(201).json({ message: "Penjualan berhasil dicatat" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
