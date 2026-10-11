@@ -12,7 +12,7 @@ const db = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN || "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTE3MDc5MTMsImlkIjoiMDFhMTI2ZGQtZDcwMS03NmRkLWFjMmQtMDM0MmRhYjk1ZDU5Iiwia2lkIjoiTW9HX2plcnRabXRLY3FZTFlNdmRubm8tNnEyMzFudlZuZ1J2T0ZtM0pfdyIsInJpZCI6Ijk2Mzg2YmI4LTA4NTUtNDk0Ny04YjNhLWUzMDc0N2FjOWMzMiJ9.QdjEu8V4UnWS5Z_lPBwe2aqTlTMXv7ucB_3enz0-6oaW0ugNBXsBUkzmyjlLqa5GU_Y1oQD65FuS2eJB8DtYBw"
 });
 
-// --- ROUTE BARANG ---
+// ==================== BARANG ROUTES ====================
 app.get('/api/barang', async (req, res) => {
   try {
     const rs = await db.execute("SELECT * FROM barang ORDER BY id DESC");
@@ -35,6 +35,19 @@ app.post('/api/barang', async (req, res) => {
   }
 });
 
+app.put('/api/barang', async (req, res) => {
+  try {
+    const { id, sku, nama_barang, harga_beli, margin, harga_jual } = req.body || {};
+    await db.execute({
+      sql: "UPDATE barang SET sku = ?, nama_barang = ?, harga_beli = ?, margin = ?, harga_jual = ? WHERE id = ?",
+      args: [sku || '', nama_barang || '', harga_beli || 0, margin || 0, harga_jual || 0, id]
+    });
+    return res.json({ message: "Barang berhasil diperbarui" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.delete('/api/barang', async (req, res) => {
   try {
     const { id } = req.query;
@@ -45,7 +58,7 @@ app.delete('/api/barang', async (req, res) => {
   }
 });
 
-// --- ROUTE MODAL ---
+// ==================== MODAL ROUTES ====================
 app.get('/api/modal', async (req, res) => {
   try {
     const rs = await db.execute("SELECT * FROM modal ORDER BY id DESC");
@@ -78,7 +91,7 @@ app.delete('/api/modal', async (req, res) => {
   }
 });
 
-// --- ROUTE PENJUALAN ---
+// ==================== PENJUALAN ROUTES ====================
 app.get('/api/penjualan', async (req, res) => {
   try {
     const rs = await db.execute(`
@@ -105,10 +118,11 @@ app.post('/api/penjualan', async (req, res) => {
     });
 
     if (cekBarang.rows.length === 0) {
-      return res.status(404).json({ error: "Barang tidak ditemukan" });
+      return res.status(404).json({ error: "Barang tidak ditemukan di katalog" });
     }
 
-    const totalModalBarang = cekBarang.rows[0].harga_beli * (jumlah || 0);
+    const hargaBeliSatuan = cekBarang.rows[0].harga_beli;
+    const totalModalBarang = hargaBeliSatuan * (jumlah || 0);
     const keuntunganBersih = total_harga - (totalModalBarang + p_lain);
 
     await db.execute({
@@ -119,10 +133,10 @@ app.post('/api/penjualan', async (req, res) => {
 
     await db.execute({
       sql: "INSERT INTO modal (jumlah_modal, keterangan) VALUES (?, ?)",
-      args: [-totalModalBarang, `Belanja Dropship (Barang ID #${barang_id})`]
+      args: [-totalModalBarang, `Belanja Dropship: (Barang ID #${barang_id} x ${jumlah} pcs)`]
     });
 
-    return res.status(201).json({ message: "Penjualan berhasil dicatat" });
+    return res.status(201).json({ message: "Penjualan berhasil dicatat & saldo modal terpotong otomatis" });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -140,12 +154,12 @@ app.delete('/api/penjualan', async (req, res) => {
       const modalKembali = getPenjualan.rows[0].total_modal;
       await db.execute({
         sql: "INSERT INTO modal (jumlah_modal, keterangan) VALUES (?, ?)",
-        args: [modalKembali, `Refund Penjualan Transaksi #${id}`]
+        args: [modalKembali, `Refund/Pembatalan Penjualan Transaksi #${id}`]
       });
     }
 
     await db.execute({ sql: "DELETE FROM penjualan WHERE id = ?", args: [id] });
-    return res.json({ message: "Penjualan dihapus & modal dikembalikan" });
+    return res.json({ message: "Penjualan dihapus & saldo modal dikembalikan" });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
