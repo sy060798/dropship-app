@@ -16,6 +16,17 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
+  // Parsing body aman untuk Vercel Serverless Function
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      body = {};
+    }
+  }
+  body = body || {};
+
   const method = req.method;
 
   try {
@@ -24,7 +35,7 @@ module.exports = async (req, res) => {
       return res.status(200).json(rs.rows);
     } 
     else if (method === 'POST') {
-      const { sku, nama_barang, harga_beli, margin, harga_jual } = req.body;
+      const { sku, nama_barang, harga_beli, margin, harga_jual } = body;
       await db.execute({
         sql: "INSERT INTO barang (sku, nama_barang, harga_beli, margin, harga_jual) VALUES (?, ?, ?, ?, ?)",
         args: [sku, nama_barang, harga_beli, margin, harga_jual]
@@ -32,7 +43,7 @@ module.exports = async (req, res) => {
       return res.status(201).json({ message: "Barang berhasil ditambahkan ke katalog" });
     }
     else if (method === 'PUT') {
-      const { id, sku, nama_barang, harga_beli, margin, harga_jual } = req.body;
+      const { id, sku, nama_barang, harga_beli, margin, harga_jual } = body;
       await db.execute({
         sql: "UPDATE barang SET sku = ?, nama_barang = ?, harga_beli = ?, margin = ?, harga_jual = ? WHERE id = ?",
         args: [sku, nama_barang, harga_beli, margin, harga_jual, id]
